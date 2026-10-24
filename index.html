@@ -1,0 +1,2438 @@
+<!DOCTYPE html>
+<html lang="ko" class="h-full bg-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>(주)일우건설 - 현장 자금 · 세금계산서 실시간 대시보드</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <!-- SheetJS (xlsx 기본 엔진 + 스타일 지원 확장 엔진) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Noto Sans KR & Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --font-scale: 1;
+        }
+        html {
+            font-size: calc(16px * var(--font-scale));
+        }
+        body {
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            line-height: 1.45;
+            color: #0f172a;
+            background-color: #f1f5f9;
+            overflow-x: hidden;
+        }
+        .num-font {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.025em;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #64748b; border-radius: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* 현장 선택 버튼 활성화 스타일 */
+        .site-btn {
+            transition: all 0.15s ease-in-out;
+        }
+        .site-btn.active {
+            background-color: #1e3a8a !important;
+            color: #ffffff !important;
+            border-color: #1e3a8a !important;
+            box-shadow: 0 8px 14px -3px rgba(30, 58, 138, 0.35), 0 4px 6px -2px rgba(30, 58, 138, 0.2);
+            transform: translateY(-1px);
+        }
+        .site-btn.active .site-sub {
+            color: #bfdbfe !important;
+        }
+        .site-btn.active .site-count {
+            background-color: #f59e0b !important;
+            color: #0f172a !important;
+        }
+
+        /* 탭 선택 활성화 스타일 */
+        .tab-btn {
+            transition: all 0.15s ease-in-out;
+        }
+        .tab-btn.active-sales {
+            background-color: #1d4ed8 !important;
+            color: #ffffff !important;
+            border-color: #1e40af !important;
+            box-shadow: 0 8px 14px -3px rgba(29, 78, 216, 0.35);
+            transform: translateY(-1px);
+        }
+        .tab-btn.active-sales i, .tab-btn.active-sales .tab-sub { color: #ffffff !important; }
+
+        .tab-btn.active-purchase {
+            background-color: #c2410c !important;
+            color: #ffffff !important;
+            border-color: #9a3412 !important;
+            box-shadow: 0 8px 14px -3px rgba(194, 65, 12, 0.35);
+            transform: translateY(-1px);
+        }
+        .tab-btn.active-purchase i, .tab-btn.active-purchase .tab-sub { color: #ffffff !important; }
+
+        .tab-btn.active-bank {
+            background-color: #047857 !important;
+            color: #ffffff !important;
+            border-color: #065f46 !important;
+            box-shadow: 0 8px 14px -3px rgba(4, 120, 87, 0.35);
+            transform: translateY(-1px);
+        }
+        .tab-btn.active-bank i, .tab-btn.active-bank .tab-sub { color: #ffffff !important; }
+
+        /* 가로 스크롤 및 글자 겹침이 절대 없는 정밀 테이블 레이아웃 */
+        .compact-table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+        }
+        .compact-table th,
+        .compact-table td {
+            padding: 0.55rem 0.5rem;
+            vertical-align: middle;
+            word-break: keep-all;
+            overflow-wrap: break-word;
+            overflow: hidden;
+            border-right: 1px solid #e2e8f0;
+        }
+        .compact-table th:last-child,
+        .compact-table td:last-child {
+            border-right: none;
+        }
+        .compact-table th {
+            font-size: 0.85rem;
+            line-height: 1.25;
+            border-right-color: #cbd5e1;
+        }
+        .compact-table td {
+            font-size: 0.9rem;
+            line-height: 1.35;
+        }
+        .compact-table td.num-cell {
+            font-size: 0.88rem;
+            padding-left: 0.35rem;
+            padding-right: 0.55rem;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        /* 인쇄 전용 스타일: 정식 구글시트/장부 표 형태로 전체 출력 */
+        #printLedgerArea {
+            display: none;
+        }
+        .print-sheet-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            font-size: 9.5pt;
+            color: #0f172a;
+            background: #ffffff;
+        }
+        .print-sheet-table thead {
+            display: table-header-group;
+        }
+        .print-sheet-table tr {
+            page-break-inside: avoid;
+        }
+        .print-sheet-table th,
+        .print-sheet-table td {
+            border: 1px solid #334155;
+            padding: 5px 6px;
+            word-break: break-all;
+            vertical-align: middle;
+            overflow: hidden;
+        }
+        .print-sheet-table th {
+            background-color: #e2e8f0 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            font-weight: 800;
+            text-align: center;
+        }
+        .print-total-row td {
+            background-color: #fef3c7 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            font-weight: 900;
+            border-top: 2px solid #0f172a;
+        }
+
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 10mm;
+            }
+            html {
+                font-size: 12px !important;
+            }
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                overflow: visible !important;
+            }
+            #appScreenWrapper,
+            #toastContainer,
+            #adminPinModal,
+            #printPreviewModal {
+                display: none !important;
+            }
+            #printLedgerArea {
+                display: block !important;
+                width: 100% !important;
+            }
+        }
+    </style>
+</head>
+<body class="h-full bg-slate-100 text-slate-900 flex flex-col min-h-screen">
+
+    <!-- 상단 알림 토스트 -->
+    <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col gap-2.5 max-w-md w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- 인쇄 전용 구글시트형 장부 영역 (인쇄 시 자동 노출) -->
+    <div id="printLedgerArea"></div>
+
+    <!-- 화면 표시 영역 래퍼 -->
+    <div id="appScreenWrapper" class="flex-1 flex flex-col min-h-screen">
+
+        <!-- Header Navigation -->
+        <header class="bg-blue-950 text-white shadow-xl sticky top-0 z-40 border-b-4 border-amber-500">
+            <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                    <!-- 좌측 타이틀 영역 -->
+                    <div class="flex items-center space-x-3 min-w-0">
+                        <div class="bg-amber-400 p-2.5 rounded-2xl text-slate-950 shadow-md flex-shrink-0">
+                            <i class="fa-solid fa-helmet-safety text-2xl"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="bg-amber-400 text-slate-950 text-xs font-black px-2 py-0.5 rounded-md flex-shrink-0">(주)일우건설</span>
+                                <h1 class="text-lg sm:text-xl xl:text-2xl font-black tracking-tight text-white truncate">현장 자금 · 세금계산서 간편조회</h1>
+                                <span id="syncStatusBadge" class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-600 flex-shrink-0">
+                                    <i class="fa-solid fa-circle text-[8px] text-amber-400"></i>
+                                    <span id="syncStatusText">구글시트 동기화 중...</span>
+                                </span>
+                            </div>
+                            <p class="text-xs sm:text-sm text-blue-200 mt-0.5 font-medium truncate">현장소장님 전용 원클릭 통합 관리 시스템 (구글 시트 실시간 연동)</p>
+                        </div>
+                    </div>
+
+                    <!-- 우측 간편 도구 버튼들 (요청 1번: 한 줄로 반듯하게 고정 정렬) -->
+                    <div class="flex items-center gap-1.5 sm:gap-2 flex-nowrap shrink-0 overflow-x-auto sm:overflow-visible pb-0.5 sm:pb-0">
+                        <!-- 구글시트 새로고침 버튼 -->
+                        <button id="btnRefreshSheet" type="button" class="whitespace-nowrap shrink-0 bg-blue-700 hover:bg-blue-600 text-white text-xs sm:text-sm font-black px-3 py-2 rounded-xl transition flex items-center shadow border border-blue-400" title="구글 시트의 최신 데이터를 즉시 다시 불러옵니다">
+                            <i id="refreshIcon" class="fa-solid fa-arrows-rotate mr-1.5"></i>
+                            <span>시트 새로고침</span>
+                        </button>
+
+                        <!-- 전체 엑셀저장 버튼 -->
+                        <button id="btnDownloadAllExcel" type="button" class="whitespace-nowrap shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-black px-3 py-2 rounded-xl transition flex items-center shadow border border-emerald-400" title="매출·매입·통장 전체 시트를 서식형 엑셀로 저장합니다">
+                            <i class="fa-solid fa-file-excel mr-1.5"></i>
+                            <span>전체 엑셀저장</span>
+                        </button>
+
+                        <!-- 글씨 크기 자유 조절 컨트롤러 (작게 / 현재배율 / 크게) -->
+                        <div class="inline-flex items-center shrink-0 bg-amber-400 text-slate-950 rounded-xl shadow border-2 border-amber-300 overflow-hidden">
+                            <button id="btnFontDec" type="button" class="whitespace-nowrap hover:bg-amber-300 active:bg-amber-500 px-2.5 py-1.5 font-black text-xs sm:text-sm transition flex items-center" title="글씨 작게">
+                                <i class="fa-solid fa-minus mr-1 text-[10px]"></i>작게
+                            </button>
+                            <button id="btnFontReset" type="button" class="whitespace-nowrap bg-amber-100 hover:bg-white text-slate-900 px-2 py-1.5 font-black text-xs border-x border-amber-300 num-font min-w-[48px] text-center" title="클릭 시 100% 기본 크기로 초기화">
+                                100%
+                            </button>
+                            <button id="btnFontInc" type="button" class="whitespace-nowrap hover:bg-amber-300 active:bg-amber-500 px-2.5 py-1.5 font-black text-xs sm:text-sm transition flex items-center" title="글씨 크게">
+                                크게<i class="fa-solid fa-plus ml-1 text-[10px]"></i>
+                            </button>
+                        </div>
+
+                        <!-- 관리자모드 버튼 -->
+                        <button id="btnAdminAuth" type="button" class="whitespace-nowrap shrink-0 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-bold px-3 py-2 rounded-xl transition flex items-center shadow border border-slate-600">
+                            <i id="adminAuthIcon" class="fa-solid fa-user-gear mr-1.5 text-amber-400"></i>
+                            <span id="adminAuthText">관리자모드</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Container -->
+        <main class="flex-1 max-w-7xl w-full mx-auto px-2.5 sm:px-5 lg:px-6 py-4 sm:py-5 space-y-5">
+
+            <!-- 1. 현장 선택 섹션 -->
+            <section class="bg-white p-4 sm:p-5 rounded-2xl shadow-md border-2 border-slate-200">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-3.5 pb-3 border-b-2 border-slate-100">
+                    <div>
+                        <h2 class="text-lg sm:text-xl font-black text-slate-900 flex items-center">
+                            <span class="bg-red-600 text-white w-7 h-7 rounded-full inline-flex items-center justify-center text-sm mr-2 shadow">1</span>
+                            <span>내 현장 선택하기</span>
+                        </h2>
+                        <p class="text-xs sm:text-sm text-slate-600 mt-0.5 font-medium">
+                            담당하시는 <strong>현장 버튼</strong>을 누르시면 아래 내역이 즉시 바뀝니다.
+                        </p>
+                    </div>
+
+                    <!-- 소장님별 보기 필터 -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div class="flex items-center bg-slate-100 p-1.5 rounded-xl border border-slate-300">
+                            <span class="text-xs sm:text-sm font-bold text-slate-600 px-2 py-0.5"><i class="fa-solid fa-user-tie mr-1 text-blue-700"></i>소장님별 보기:</span>
+                            <select id="managerFilterSelect" class="bg-white text-slate-900 font-bold text-xs sm:text-sm px-2.5 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                                <option value="ALL">전체 소장님 (전체 현장)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 현장 선택 버튼 그리드 (전체 현장 보기 바로 옆에 기타/미지정 배치) -->
+                <div id="siteButtonList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
+                    <!-- JS에서 동적 생성 -->
+                </div>
+            </section>
+
+            <!-- 선택한 현장 공사 개요 배너 -->
+            <section id="siteOverviewBanner" class="bg-gradient-to-r from-blue-950 via-blue-900 to-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-lg border-2 border-blue-800">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div class="space-y-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span id="bannerSiteType" class="bg-amber-400 text-slate-950 text-xs font-black px-2.5 py-0.5 rounded-full">전체 현장 통합</span>
+                            <h3 id="bannerFullName" class="text-lg sm:text-2xl font-black text-white tracking-tight">(주)일우건설 전체 현장 통합 현황</h3>
+                        </div>
+                        <p id="bannerAddress" class="text-xs sm:text-sm text-blue-200 flex items-center gap-1.5">
+                            <i class="fa-solid fa-building-shield text-amber-400"></i>
+                            <span>상단에서 개별 현장 버튼을 누르시면 해당 현장의 계약금액, 준공일, 수금률이 표시됩니다.</span>
+                        </p>
+                    </div>
+
+                    <!-- 현장 핵심 메타 정보 (요청 2번-B: 전체 현장일 때 제목이 '전체 현장 매출합계'로 자동 전환되어 한 줄로 깔끔하게 표시) -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 lg:min-w-[570px] shrink-0">
+                        <div class="bg-white/10 backdrop-blur px-3 py-2.5 rounded-xl border border-white/15">
+                            <p class="text-xs text-blue-200 font-bold">현장소장 (대리인)</p>
+                            <p id="bannerManager" class="text-sm sm:text-base font-black text-amber-300 mt-0.5 whitespace-nowrap">전체 소장님</p>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur px-3 py-2.5 rounded-xl border border-white/15">
+                            <p id="bannerContractLabel" class="text-xs text-blue-200 font-bold">전체 현장 매출합계</p>
+                            <div id="bannerContractAmt" class="text-sm sm:text-base font-black text-white mt-0.5 num-font">-</div>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur px-3 py-2.5 rounded-xl border border-white/15">
+                            <p class="text-xs text-blue-200 font-bold">공사기간 / 준공일</p>
+                            <div id="bannerPeriod" class="text-xs sm:text-sm font-black text-white mt-0.5 num-font">-</div>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur px-3 py-2.5 rounded-xl border border-white/15">
+                            <p class="text-xs text-blue-200 font-bold">수금률 / D-Day</p>
+                            <p id="bannerCollectionRate" class="text-sm sm:text-base font-black text-emerald-300 mt-0.5 num-font whitespace-nowrap">-</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. 구분 선택 탭 (매출 / 매입 / 통장 입출금) -->
+            <section class="bg-white p-4 sm:p-5 rounded-2xl shadow-md border-2 border-slate-200 space-y-3.5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-slate-100 pb-2.5">
+                    <h2 class="text-lg sm:text-xl font-black text-slate-900 flex items-center">
+                        <span class="bg-blue-600 text-white w-7 h-7 rounded-full inline-flex items-center justify-center text-sm mr-2 shadow">2</span>
+                        <span>보려는 장부 항목을 누르세요</span>
+                    </h2>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs sm:text-sm text-slate-500 font-bold">현재 선택된 현장:</span>
+                        <span id="selectedSiteNameBadge" class="text-sm sm:text-base font-black bg-blue-900 text-white px-3.5 py-1 rounded-full shadow-sm">
+                            전체 현장 통합 보기
+                        </span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3.5">
+                    <!-- 매출 탭 -->
+                    <button id="tabSales" type="button" class="tab-btn w-full py-3.5 sm:py-4 px-4 rounded-2xl border-2 border-blue-300 bg-blue-50 text-blue-950 font-black text-base sm:text-lg flex items-center justify-between sm:justify-center gap-3 shadow-sm hover:bg-blue-100">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-file-invoice-dollar text-xl sm:text-2xl text-blue-600"></i>
+                            <div class="text-left">
+                                <div>매출 (세금계산서 발행)</div>
+                                <div class="tab-sub text-xs font-bold text-blue-700 mt-0.5" id="tabSalesCount">총 0건</div>
+                            </div>
+                        </div>
+                    </button>
+                    
+                    <!-- 매입 탭 -->
+                    <button id="tabPurchase" type="button" class="tab-btn active-purchase w-full py-3.5 sm:py-4 px-4 rounded-2xl border-2 border-orange-300 bg-orange-50 text-orange-950 font-black text-base sm:text-lg flex items-center justify-between sm:justify-center gap-3 shadow-sm hover:bg-orange-100">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-receipt text-xl sm:text-2xl text-orange-600"></i>
+                            <div class="text-left">
+                                <div>매입 (세금계산서 수취)</div>
+                                <div class="tab-sub text-xs font-bold text-orange-700 mt-0.5" id="tabPurchaseCount">총 0건</div>
+                            </div>
+                        </div>
+                    </button>
+
+                    <!-- 통장 입출금 탭 -->
+                    <button id="tabBank" type="button" class="tab-btn w-full py-3.5 sm:py-4 px-4 rounded-2xl border-2 border-emerald-300 bg-emerald-50 text-emerald-950 font-black text-base sm:text-lg flex items-center justify-between sm:justify-center gap-3 shadow-sm hover:bg-emerald-100">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-building-columns text-xl sm:text-2xl text-emerald-600"></i>
+                            <div class="text-left">
+                                <div>통장 입출금 내역</div>
+                                <div class="tab-sub text-xs font-bold text-emerald-700 mt-0.5" id="tabBankCount">총 0건</div>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 3. 선택 현장 전체 자금 요약 카드 (4대 지표) -->
+            <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                <!-- 카드 1: 매출 합계 -->
+                <div id="cardSalesBox" class="bg-white p-4 rounded-2xl shadow-md border-l-8 border-blue-600 border-y border-r border-slate-200 cursor-pointer hover:shadow-lg transition">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm sm:text-base font-extrabold text-slate-600">매출 세금계산서 합계</p>
+                        <span id="cardSalesBadge" class="bg-blue-100 text-blue-800 text-xs font-black px-2 py-0.5 rounded-full">0건</span>
+                    </div>
+                    <h3 id="summaryValue1" class="text-xl sm:text-2xl font-black text-blue-900 mt-1.5 num-font tracking-tight">0 원</h3>
+                    <p id="summarySub1" class="text-xs text-slate-500 mt-1 font-medium num-font">공급가액: 0 원</p>
+                </div>
+
+                <!-- 카드 2: 매입 합계 -->
+                <div id="cardPurchaseBox" class="bg-white p-4 rounded-2xl shadow-md border-l-8 border-orange-500 border-y border-r border-slate-200 cursor-pointer hover:shadow-lg transition">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm sm:text-base font-extrabold text-slate-600">매입 세금계산서 합계</p>
+                        <span id="cardPurchaseBadge" class="bg-orange-100 text-orange-800 text-xs font-black px-2 py-0.5 rounded-full">0건</span>
+                    </div>
+                    <h3 id="summaryValue2" class="text-xl sm:text-2xl font-black text-orange-800 mt-1.5 num-font tracking-tight">0 원</h3>
+                    <p id="summarySub2" class="text-xs text-slate-500 mt-1 font-medium num-font">공급가액: 0 원</p>
+                </div>
+
+                <!-- 카드 3: 통장 총 입금 / 총 출금 -->
+                <div id="cardBankInOutBox" class="bg-white p-4 rounded-2xl shadow-md border-l-8 border-teal-600 border-y border-r border-slate-200 cursor-pointer hover:shadow-lg transition">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm sm:text-base font-extrabold text-slate-600">통장 실제 입금 / 출금</p>
+                        <span id="cardBankBadge" class="bg-teal-100 text-teal-800 text-xs font-black px-2 py-0.5 rounded-full">0건</span>
+                    </div>
+                    <div class="mt-1.5 space-y-0.5">
+                        <div class="flex items-center justify-between text-xs sm:text-sm font-black text-emerald-700 num-font">
+                            <span>입금:</span>
+                            <span id="summaryBankIn">0 원</span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs sm:text-sm font-black text-rose-700 num-font">
+                            <span>출금:</span>
+                            <span id="summaryBankOut">0 원</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 카드 4: 통장 수지차액 (공사이익금) -->
+                <div id="cardBalanceBox" class="bg-white p-4 rounded-2xl shadow-md border-l-8 border-emerald-600 border-y border-r border-slate-200 cursor-pointer hover:shadow-lg transition">
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm sm:text-base font-extrabold text-slate-600">통장 잔액 (공사이익금)</p>
+                        <span id="cardProfitRateBadge" class="bg-emerald-100 text-emerald-800 text-xs font-black px-2 py-0.5 rounded-full">이익률 -</span>
+                    </div>
+                    <h3 id="summaryValue3" class="text-xl sm:text-2xl font-black text-emerald-700 mt-1.5 num-font tracking-tight">0 원</h3>
+                    <p id="summarySub3" class="text-xs text-slate-500 mt-1 font-medium">통장 입금 - 출금 차액</p>
+                </div>
+            </section>
+
+            <!-- 4. 상세 내역 테이블, 미결제 필터, 엑셀 저장 및 시트형 인쇄 -->
+            <section class="bg-white rounded-2xl shadow-md border-2 border-slate-200 overflow-hidden">
+                <!-- 상단 타이틀 & 미결제 필터 / 엑셀 저장 / 인쇄 버튼 바 (요청 3번 & 4번 반영) -->
+                <div class="p-4 sm:p-5 border-b-2 border-slate-200 bg-slate-50 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h3 id="tableTitle" class="text-lg sm:text-xl font-black text-slate-900 flex items-center">
+                                <i class="fa-solid fa-table text-blue-600 mr-2"></i> 상세 거래 내역
+                            </h3>
+                            <span id="tableCountBadge" class="bg-blue-900 text-white text-xs sm:text-sm font-black px-3 py-1 rounded-full shrink-0">총 0건</span>
+                        </div>
+                        <!-- 요청 4번: 뒤쪽 괄호 설명 삭제하고 깔끔한 한 줄 설명만 표시 -->
+                        <p id="tableSubtitle" class="text-xs sm:text-sm text-slate-600 mt-0.5 font-medium">
+                            선택하신 현장 및 항목의 상세 장부 내역입니다.
+                        </p>
+                    </div>
+
+                    <!-- 요청 3번: 미결제 필터 + 현재 내역 엑셀저장 + 인쇄하기 3개 버튼이 절대 아랫줄로 떨어지지 않고 한 줄로 나란히 정렬 -->
+                    <div class="flex items-center gap-2 flex-nowrap shrink-0 overflow-x-auto sm:overflow-visible pb-0.5 sm:pb-0">
+                        <!-- 미결제 내역만 필터링하는 원클릭 토글 버튼 -->
+                        <button id="btnFilterUnpaid" type="button" class="whitespace-nowrap shrink-0 bg-white hover:bg-rose-50 text-rose-700 text-xs sm:text-sm font-black px-3.5 py-2.5 rounded-xl transition flex items-center shadow-sm border-2 border-rose-400">
+                            <i class="fa-solid fa-circle-exclamation text-rose-600 mr-1.5"></i>
+                            <span id="unpaidBtnText">미결제만 보기</span>
+                            <span id="unpaidCountBadge" class="ml-1.5 bg-rose-100 text-rose-800 text-xs font-black px-2 py-0.5 rounded-full num-font">0건</span>
+                        </button>
+
+                        <!-- 현재 내역 엑셀저장 -->
+                        <button id="btnDownloadCurrentExcel" type="button" class="whitespace-nowrap shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-black px-3.5 py-2.5 rounded-xl transition flex items-center shadow-md border-2 border-emerald-500">
+                            <i class="fa-solid fa-file-excel text-base mr-1.5"></i>
+                            <span>현재 내역 엑셀저장</span>
+                        </button>
+
+                        <!-- 인쇄하기 -->
+                        <button id="btnPrintView" type="button" class="whitespace-nowrap shrink-0 bg-slate-700 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold px-3.5 py-2.5 rounded-xl transition flex items-center shadow-sm border-2 border-slate-700">
+                            <i class="fa-solid fa-print text-base mr-1.5"></i>
+                            <span>인쇄하기</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 월별/검색/구분 필터 바 -->
+                <div class="p-3.5 sm:p-4 bg-slate-100/80 border-b-2 border-slate-200 space-y-2.5">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-2.5">
+                        <!-- 월별 원클릭 버튼 -->
+                        <div class="flex items-center gap-1 flex-wrap" id="monthFilterButtons">
+                            <span class="text-xs sm:text-sm font-black text-slate-700 mr-1"><i class="fa-regular fa-calendar-check mr-1 text-blue-700"></i>월별 선택:</span>
+                            <button type="button" data-month="ALL" class="month-btn bg-blue-900 text-white font-black text-xs sm:text-sm px-2.5 py-1 rounded-lg border border-blue-900 shadow-sm">전체월</button>
+                            <button type="button" data-month="1" class="month-btn bg-white text-slate-700 hover:bg-slate-200 font-bold text-xs sm:text-sm px-2 py-1 rounded-lg border border-slate-300">1월</button>
+                            <button type="button" data-month="2" class="month-btn bg-white text-slate-700 hover:bg-slate-200 font-bold text-xs sm:text-sm px-2 py-1 rounded-lg border border-slate-300">2월</button>
+                            <button type="button" data-month="3" class="month-btn bg-white text-slate-700 hover:bg-slate-200 font-bold text-xs sm:text-sm px-2 py-1 rounded-lg border border-slate-300">3월</button>
+                            <button type="button" data-month="4" class="month-btn bg-white text-slate-700 hover:bg-slate-200 font-bold text-xs sm:text-sm px-2 py-1 rounded-lg border border-slate-300">4월</button>
+                            <button type="button" data-month="5" class="month-btn bg-white text-slate-700 hover:bg-slate-200 font-bold text-xs sm:text-sm px-2 py-1 rounded-lg border border-slate-300">5월</button>
+                            <button type="button" data-month="6" class="month-btn bg-white text-slate-700 hover:bg-slate-200 font-bold text-xs sm:text-sm px-2 py-1 rounded-lg border border-slate-300">6월</button>
+                            <button type="button" data-month="7" class="month-btn bg-white text-slate-700 hover:bg-slate-200 font-bold text-xs sm:text-sm px-2 py-1 rounded-lg border border-slate-300">7월</button>
+                            <button type="button" data-month="8" class="month-btn bg-white text-slate-700 hover:bg-slate-200 font-bold text-xs sm:text-sm px-2 py-1 rounded-lg border border-slate-300">8월</button>
+                            <button type="button" data-month="9" class="month-btn bg-white text-slate-700 hover:bg-slate-200 font-bold text-xs sm:text-sm px-2 py-1 rounded-lg border border-slate-300">9월</button>
+                            <button type="button" data-month="10" class="month-btn bg-white text-slate-700 hover:bg-slate-200 font-bold text-xs sm:text-sm px-2 py-1 rounded-lg border border-slate-300">10월</button>
+                            <button type="button" data-month="11" class="month-btn bg-white text-slate-700 hover:bg-slate-200 font-bold text-xs sm:text-sm px-2 py-1 rounded-lg border border-slate-300">11월</button>
+                            <button type="button" data-month="12" class="month-btn bg-white text-slate-700 hover:bg-slate-200 font-bold text-xs sm:text-sm px-2 py-1 rounded-lg border border-slate-300">12월</button>
+                        </div>
+
+                        <!-- 통장 탭 전용: 입금/출금 세부 필터 -->
+                        <div id="bankSubFilterBox" class="hidden flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-300">
+                            <span class="text-xs font-black text-slate-600 px-2">입출금 구분:</span>
+                            <button type="button" data-banktype="ALL" class="bank-type-btn bg-emerald-700 text-white font-black text-xs px-2.5 py-1 rounded-lg">입출금 전체</button>
+                            <button type="button" data-banktype="입금" class="bank-type-btn bg-slate-100 text-emerald-800 hover:bg-emerald-50 font-bold text-xs px-2.5 py-1 rounded-lg">입금만 보기</button>
+                            <button type="button" data-banktype="출금" class="bank-type-btn bg-slate-100 text-rose-800 hover:bg-rose-50 font-bold text-xs px-2.5 py-1 rounded-lg">출금만 보기</button>
+                        </div>
+                    </div>
+
+                    <!-- 거래처 / 품목 검색창 및 정렬 -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-0.5">
+                        <div class="relative flex-1 max-w-xl">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
+                            <input type="text" id="searchInput" placeholder="거래처 이름이나 품목명(예: 레미콘, 철근, 노무비, 신성건축)을 입력하세요..." 
+                                class="w-full pl-10 pr-20 py-2 bg-white border-2 border-slate-300 rounded-xl text-sm sm:text-base font-bold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600">
+                            <button id="btnClearSearch" type="button" class="hidden absolute right-2 top-1/2 -translate-y-1/2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold px-2 py-1 rounded-lg">
+                                지우기
+                            </button>
+                        </div>
+
+                        <div class="flex items-center gap-2 self-end sm:self-auto">
+                            <label for="sortSelect" class="text-xs sm:text-sm font-bold text-slate-600 whitespace-nowrap">정렬 순서:</label>
+                            <select id="sortSelect" class="bg-white border-2 border-slate-300 rounded-xl px-2.5 py-1.5 text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-600">
+                                <option value="DATE_DESC">최신 날짜순 (최근 → 과거)</option>
+                                <option value="DATE_ASC">과거 날짜순 (1월 → 12월)</option>
+                                <option value="AMT_DESC">금액 큰 순서대로</option>
+                                <option value="AMT_ASC">금액 작은 순서대로</option>
+                                <option value="PARTNER_ASC">거래처 가나다순</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 현재 조회된 목록 상단 합계 요약 바 (합계금액 -> 공급가액 -> 부가세 순) -->
+                <div id="currentTableSummaryBar" class="px-4 py-3 bg-blue-50/90 border-b-2 border-blue-200 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="bg-blue-700 text-white text-xs font-black px-2.5 py-1 rounded-md">현재 조회 합계</span>
+                        <span id="barCountText" class="text-sm sm:text-base font-black text-slate-800">총 0 건</span>
+                        <span id="unpaidFilterActiveTag" class="hidden bg-rose-600 text-white text-xs font-black px-2.5 py-0.5 rounded-full animate-pulse">
+                            <i class="fa-solid fa-filter mr-1"></i>미결제 내역만 표시 중
+                        </span>
+                    </div>
+                    <div id="barAmountsContainer" class="flex flex-wrap items-center gap-3 sm:gap-5 text-sm sm:text-base font-black num-font">
+                        <!-- JS에서 합계금액 -> 공급가액 -> 부가세 순으로 동적 표시 -->
+                    </div>
+                </div>
+
+                <!-- 테이블 영역 (가로 스크롤 및 글자 겹침 없이 한 화면에 꽉 차는 고정 비율 레이아웃) -->
+                <div class="w-full overflow-x-hidden custom-scrollbar max-h-[680px] overflow-y-auto">
+                    <table class="compact-table text-left">
+                        <thead id="dataTableHead" class="text-slate-800 bg-slate-200 border-b-2 border-slate-300 font-black sticky top-0 z-10 shadow-sm">
+                            <!-- JS에서 카테고리에 맞게 동적 헤더 렌더링 -->
+                        </thead>
+                        <tbody id="dataTableBody" class="divide-y divide-slate-200 font-medium bg-white">
+                            <!-- Dynamic Content -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 더 보기 버튼 (데이터가 많을 때 화면 끊김 방지) -->
+                <div id="loadMoreContainer" class="hidden p-3.5 bg-slate-50 border-t border-slate-200 text-center">
+                    <button id="btnLoadMore" type="button" class="bg-blue-900 hover:bg-blue-800 text-white font-black text-sm sm:text-base px-6 py-2.5 rounded-xl shadow-md transition inline-flex items-center gap-2">
+                        <i class="fa-solid fa-circle-chevron-down"></i>
+                        <span id="loadMoreBtnText">나머지 내역 더 보기</span>
+                    </button>
+                </div>
+
+                <!-- Footer Summary Banner -->
+                <div class="p-3.5 sm:p-4 bg-slate-800 text-white border-t-2 border-slate-900 flex flex-col sm:flex-row justify-between items-center gap-2 text-sm sm:text-base font-black">
+                    <span id="dataCountText" class="text-amber-300">조회 내역: 총 0 건</span>
+                    <span id="dataSumText" class="text-base sm:text-xl text-white num-font">합계 금액: 0 원</span>
+                </div>
+            </section>
+
+            <!-- 5. 거래처별 집계 요약 섹션 -->
+            <section class="bg-white p-4 sm:p-5 rounded-2xl shadow-md border-2 border-slate-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b-2 border-slate-100">
+                    <div>
+                        <h3 class="text-base sm:text-lg font-black text-slate-900 flex items-center">
+                            <i class="fa-solid fa-chart-pie text-indigo-600 mr-2"></i>
+                            <span id="partnerSummaryTitle">현재 선택 항목의 주요 거래처별 합계 (상위 10곳)</span>
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-0.5 font-medium">거래처 카드를 누르시면 해당 거래처 내역만 표에 바로 필터링됩니다.</p>
+                    </div>
+                    <button id="btnTogglePartnerSummary" type="button" class="text-xs sm:text-sm font-bold text-blue-700 hover:underline self-start sm:self-auto">
+                        접기 / 펼치기
+                    </button>
+                </div>
+                <div id="partnerSummaryGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 mt-3.5">
+                    <!-- JS 동적 생성 -->
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-slate-900 text-slate-400 border-t border-slate-800 py-4 text-center text-xs sm:text-sm mt-6">
+            <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+                <p class="font-bold text-slate-300">© 2026 (주)일우건설 현장 자금 & 세금계산서 실시간 조회 시스템</p>
+                <p class="text-xs text-slate-400">구글 시트 실시간 연동 · 서식형 엑셀 저장 및 시트형 인쇄 지원</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 인쇄 미리보기 & 즉시 출력 전용 모달 (미리보기 창 및 모든 브라우저 100% 호환) -->
+    <div id="printPreviewModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex flex-col p-2 sm:p-6 hidden">
+        <div class="bg-white w-full max-w-6xl mx-auto flex-1 flex flex-col rounded-2xl shadow-2xl border-4 border-slate-800 overflow-hidden">
+            <!-- 모달 상단 컨트롤 바 -->
+            <div class="bg-slate-900 text-white px-4 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-slate-700">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-lg shadow">
+                        <i class="fa-solid fa-print"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-black">장부 인쇄 미리보기 (A4 가로 양식)</h3>
+                        <p class="text-xs text-slate-300">우측의 [프린터로 인쇄] 버튼을 누르시면 아래 표 양식 그대로 깔끔하게 출력됩니다.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btnExecuteBrowserPrint" class="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm sm:text-base px-4 py-2 rounded-xl shadow flex items-center gap-1.5 transition">
+                        <i class="fa-solid fa-print"></i> 프린터로 인쇄 (PDF 저장)
+                    </button>
+                    <button type="button" id="btnOpenPrintPopup" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow flex items-center gap-1.5 transition" title="새 창으로 인쇄 화면을 띄웁니다">
+                        <i class="fa-solid fa-up-right-from-square"></i> 새 창에서 인쇄
+                    </button>
+                    <button type="button" id="btnClosePrintModal" class="bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs sm:text-sm px-3.5 py-2 rounded-xl transition flex items-center gap-1">
+                        <i class="fa-solid fa-xmark"></i> 닫기
+                    </button>
+                </div>
+            </div>
+            <!-- 모달 내부 장부 표 미리보기 영역 -->
+            <div class="flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-200 custom-scrollbar">
+                <div id="printModalContentBox" class="bg-white max-w-5xl mx-auto p-6 sm:p-8 shadow-xl rounded-lg border border-slate-300 text-slate-900">
+                    <!-- JS에서 시트형 인쇄 표 HTML 주입 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 관리자모드 인증 모달 -->
+    <div id="adminPinModal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl border-4 border-slate-800 overflow-hidden transform transition-all">
+            <div class="bg-slate-900 text-white p-4 flex items-center justify-between border-b border-slate-700">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-lg shadow">
+                        <i class="fa-solid fa-user-gear"></i>
+                    </div>
+                    <h3 class="text-lg font-black">관리자모드</h3>
+                </div>
+                <button type="button" id="btnClosePinModal" class="text-slate-400 hover:text-white p-1.5 rounded-lg text-xl font-bold transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="p-5 space-y-4">
+                <div class="space-y-2">
+                    <label for="adminPinInput" class="block text-sm font-bold text-slate-700">
+                        비밀번호 입력
+                    </label>
+                    <input type="password" id="adminPinInput" maxlength="10" placeholder="비밀번호 입력" 
+                        class="w-full text-center tracking-widest text-xl font-black py-2.5 px-4 rounded-xl border-2 border-slate-300 focus:border-blue-600 focus:ring-4 focus:ring-blue-100 outline-none text-slate-900 bg-slate-50 transition">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5 pt-1">
+                    <button type="button" id="btnCancelPin" class="py-2.5 px-4 rounded-xl border-2 border-slate-300 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition">
+                        취소
+                    </button>
+                    <button type="button" id="btnSubmitPin" class="py-2.5 px-4 rounded-xl bg-blue-900 hover:bg-blue-800 text-white font-black text-sm shadow-lg transition flex items-center justify-center">
+                        확인
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        // =========================================================================
+        // 0. 구글 시트 Apps Script 웹 앱 연동 주소 (영구 내장)
+        // =========================================================================
+        const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbxtCgiul-It0yhiQk3OTbwR18H2ZFiqc0j2cLzvZiE1WZPP_ZABxLbAbuL1MSX9kdNR/exec";
+
+        // 시트 실시간 연동 데이터 저장소
+        let sitesData = [];
+        let rawData = [];
+
+        // 앱 상태 변수
+        const gasWebAppUrl = DEFAULT_GAS_URL;
+        let isInitialLoad = true;
+        let currentSite = "ALL";
+        let currentManagerFilter = "ALL";
+        let currentCategory = "PURCHASE"; // SALES(매출), PURCHASE(매입), BANK(통장입출금)
+        let currentMonth = "ALL";
+        let currentBankType = "ALL"; // ALL, 입금, 출금
+        let currentSearch = "";
+        let currentSort = "DATE_DESC";
+        let onlyUnpaid = false;      // 미결제 내역만 보기 필터 상태 (세금계산서 매출/매입 전용)
+        let displayLimit = 200;      // 화면 끊김 방지용 페이지네이션
+        let fontScalePercent = parseInt(localStorage.getItem('ILWOO_FONT_SCALE') || '100', 10);
+        let isAdminUnlocked = false; // 관리자모드 인증 상태 (기본 false)
+        const masterPin = "0519";    // 관리자 비밀번호
+
+        // 토스트 알림 함수
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            let bgClass = 'bg-blue-900 border-amber-400 text-white';
+            let iconClass = 'fa-circle-check text-amber-400';
+            if (type === 'error') {
+                bgClass = 'bg-rose-900 border-rose-400 text-white';
+                iconClass = 'fa-triangle-exclamation text-rose-300';
+            } else if (type === 'success') {
+                bgClass = 'bg-emerald-900 border-emerald-400 text-white';
+                iconClass = 'fa-circle-check text-emerald-300';
+            }
+            toast.className = `pointer-events-auto flex items-center gap-2.5 p-3.5 rounded-2xl shadow-2xl border-2 ${bgClass} font-bold text-sm sm:text-base transition-all duration-300`;
+            toast.innerHTML = `
+                <i class="fa-solid ${iconClass} text-xl flex-shrink-0"></i>
+                <div class="flex-1">${message}</div>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        // 원화 포맷팅
+        function formatKRW(amount) {
+            if (amount === null || amount === undefined || isNaN(amount)) return '0 원';
+            const num = Math.round(Number(amount));
+            return new Intl.NumberFormat('ko-KR').format(num) + ' 원';
+        }
+
+        // 억/만원 단위 보조 표기
+        function formatKoreanUnit(amount) {
+            if (!amount || isNaN(amount)) return '0원';
+            const absVal = Math.abs(Math.round(Number(amount)));
+            const sign = amount < 0 ? '-' : '';
+            if (absVal >= 100000000) {
+                const eok = Math.floor(absVal / 100000000);
+                const man = Math.round((absVal % 100000000) / 10000);
+                if (man > 0) {
+                    return `${sign}${new Intl.NumberFormat('ko-KR').format(eok)}억 ${new Intl.NumberFormat('ko-KR').format(man)}만원`;
+                }
+                return `${sign}${new Intl.NumberFormat('ko-KR').format(eok)}억원`;
+            } else if (absVal >= 10000) {
+                const man = Math.round(absVal / 10000);
+                return `${sign}${new Intl.NumberFormat('ko-KR').format(man)}만원`;
+            }
+            return `${sign}${new Intl.NumberFormat('ko-KR').format(absVal)}원`;
+        }
+
+        // 현장명 정규화 헬퍼 (제니스오토텍 -> 제니스, 한현스틸 -> 한현, 빈값 -> 기타/미지정)
+        function normalizeSiteKey(siteStr) {
+            if (!siteStr) return '기타/미지정';
+            const s = String(siteStr).trim();
+            if (!s || s === '-') return '기타/미지정';
+            if (s === '제니스오토텍') return '제니스';
+            if (s === '한현스틸') return '한현';
+            return s;
+        }
+
+        // 날짜 문자열 정규화 (엑셀 시리얼 숫자나 ISO 문자열이 넘어올 경우 YYYY-MM-DD로 깔끔하게 보정)
+        function normalizeDateValue(val) {
+            if (val === undefined || val === null) return '';
+            const s = String(val).trim();
+            if (!s || s === '-') return '';
+            if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+            // 엑셀 날짜 시리얼 번호 (예: 46286 -> 2026-09-21, 46315 -> 2026-10-20)
+            if (/^\d{5}$/.test(s)) {
+                const serial = parseInt(s, 10);
+                if (serial > 40000 && serial < 55000) {
+                    const utcDays = serial - 25569;
+                    const d = new Date(utcDays * 86400 * 1000);
+                    if (!isNaN(d.getTime())) {
+                        const yyyy = d.getUTCFullYear();
+                        const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+                        const dd = String(d.getUTCDate()).padStart(2, '0');
+                        return `${yyyy}-${mm}-${dd}`;
+                    }
+                }
+            }
+            // ISO 날짜 또는 영문 날짜 문자열인 경우
+            if (s.includes('T') && /^\d{4}-\d{2}-\d{2}T/.test(s)) {
+                const d = new Date(s);
+                if (!isNaN(d.getTime())) {
+                    const kst = new Date(d.getTime() + 9 * 3600 * 1000);
+                    return kst.toISOString().slice(0, 10);
+                }
+                return s.slice(0, 10);
+            }
+            return s;
+        }
+
+        // 결제여부/비고 값 정규화 (시트에서 날짜가 시리얼 번호나 긴 날짜로 올 때 깔끔한 날짜로 변환)
+        function normalizeNoteValue(val) {
+            if (val === undefined || val === null) return '';
+            const s = String(val).trim();
+            if (!s || s === '-') return '';
+            return normalizeDateValue(s);
+        }
+
+        // 미결제 내역 판별 함수 (매출/매입 세금계산서 중 결제여부 칸이 비어있는 항목)
+        function isUnpaidRecord(item) {
+            if (!item) return false;
+            if (item.cat !== '매출' && item.cat !== '매입') return false;
+            const noteStr = item.note !== undefined && item.note !== null ? String(item.note).trim() : '';
+            return noteStr === '' || noteStr === '-';
+        }
+
+        // 글씨 크기 조절 적용 함수 (80% ~ 150% 자유 조절)
+        function applyFontScale(percent) {
+            fontScalePercent = Math.min(150, Math.max(80, percent));
+            const scaleVal = (fontScalePercent / 100).toFixed(2);
+            document.documentElement.style.setProperty('--font-scale', scaleVal);
+            const resetBtn = document.getElementById('btnFontReset');
+            if (resetBtn) resetBtn.innerText = `${fontScalePercent}%`;
+            localStorage.setItem('ILWOO_FONT_SCALE', String(fontScalePercent));
+        }
+
+        // 내장된 구글 시트 Apps Script에서 실시간 데이터 불러오기
+        async function fetchGoogleSheetData(silent = false) {
+            const url = (gasWebAppUrl || '').trim();
+            const badge = document.getElementById('syncStatusBadge');
+            const statusText = document.getElementById('syncStatusText');
+            const refreshIcon = document.getElementById('refreshIcon');
+
+            if (refreshIcon) refreshIcon.classList.add('fa-spin');
+            if (statusText) statusText.innerText = '시트 동기화 중...';
+
+            try {
+                const fetchUrl = new URL(url);
+                if (isAdminUnlocked) {
+                    fetchUrl.searchParams.set('pin', masterPin);
+                }
+                fetchUrl.searchParams.set('_t', Date.now());
+
+                const response = await fetch(fetchUrl.toString(), {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const payload = await response.json();
+                if (payload.status && payload.status !== 'ok') {
+                    throw new Error(payload.message || '시트 응답 오류');
+                }
+
+                // 1) 공사목록 파싱
+                const incomingSites = Array.isArray(payload.sites) ? payload.sites : [];
+                sitesData = incomingSites.map((s, idx) => ({
+                    id: s.id || (idx + 1),
+                    type: String(s.type || '원도급'),
+                    site: normalizeSiteKey(s.site),
+                    fullName: String(s.fullName || s.site || ''),
+                    address: String(s.address || ''),
+                    manager: String(s.manager || '-').trim() || '-',
+                    contractAmt: Number(s.contractAmt) || 0,
+                    supplyAmt: Number(s.supplyAmt) || 0,
+                    vatAmt: Number(s.vatAmt) || 0,
+                    startDate: normalizeDateValue(s.startDate),
+                    endDate: normalizeDateValue(s.endDate)
+                }));
+
+                // 2) 거래내역 파싱 (압축 배열 또는 객체 배열 모두 호환)
+                const incomingRecords = Array.isArray(payload.records) ? payload.records : [];
+                rawData = incomingRecords.map((r, idx) => {
+                    if (Array.isArray(r)) {
+                        return {
+                            id: r[0] || (idx + 1),
+                            date: normalizeDateValue(r[1]),
+                            month: Number(r[2]) || 1,
+                            site: normalizeSiteKey(r[3]),
+                            origSite: String(r[4] || ''),
+                            cat: String(r[5] || '매입'),
+                            bizNo: String(r[6] || ''),
+                            partner: String(r[7] || '-'),
+                            ceo: String(r[8] || ''),
+                            item: String(r[9] || '-'),
+                            supply: Number(r[10]) || 0,
+                            vat: Number(r[11]) || 0,
+                            total: Number(r[12]) || 0,
+                            inAmt: Number(r[13]) || 0,
+                            outAmt: Number(r[14]) || 0,
+                            note: normalizeNoteValue(r[15]),
+                            paper: String(r[16] || '')
+                        };
+                    }
+                    return {
+                        id: r.id || (idx + 1),
+                        date: normalizeDateValue(r.date),
+                        month: Number(r.month) || 1,
+                        site: normalizeSiteKey(r.site),
+                        origSite: String(r.origSite || r.site || ''),
+                        cat: String(r.cat || '매입'),
+                        bizNo: String(r.bizNo || ''),
+                        partner: String(r.partner || '-'),
+                        ceo: String(r.ceo || ''),
+                        item: String(r.item || '-'),
+                        supply: Number(r.supply) || 0,
+                        vat: Number(r.vat) || 0,
+                        total: Number(r.total) || 0,
+                        inAmt: Number(r.inAmt) || 0,
+                        outAmt: Number(r.outAmt) || 0,
+                        note: normalizeNoteValue(r.note),
+                        paper: String(r.paper || '')
+                    };
+                });
+
+                populateManagerDropdown();
+                renderSiteButtons();
+                updateDisplay();
+                isInitialLoad = false;
+
+                const nowStr = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+                if (badge) {
+                    badge.className = "inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-900/80 text-emerald-200 border border-emerald-500/60 flex-shrink-0";
+                }
+                if (statusText) statusText.innerText = `실시간 연동됨 (${nowStr})`;
+
+                if (!silent) {
+                    showToast(`구글 시트에서 총 ${new Intl.NumberFormat('ko-KR').format(rawData.length)}건의 최신 내역을 불러왔습니다.`, 'success');
+                }
+            } catch (err) {
+                isInitialLoad = false;
+                if (badge) {
+                    badge.className = "inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-900/80 text-rose-200 border border-rose-500/60 flex-shrink-0";
+                }
+                if (statusText) statusText.innerText = '연동 확인 필요';
+                renderSiteButtons();
+                updateDisplay();
+                showToast('구글 시트 데이터를 불러오지 못했습니다. 우측 상단 [시트 새로고침]을 눌러주세요.', 'error');
+            } finally {
+                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+            }
+        }
+
+        // 소장님 드롭다운 동적 구성
+        function populateManagerDropdown() {
+            const select = document.getElementById('managerFilterSelect');
+            if (!select) return;
+            const prevVal = currentManagerFilter;
+            const managerSites = {};
+            sitesData.forEach(s => {
+                if (!isAdminUnlocked && s.site === '본사') return;
+                const m = s.manager && s.manager !== '-' ? s.manager.trim() : '';
+                if (m) {
+                    if (!managerSites[m]) managerSites[m] = [];
+                    if (!managerSites[m].includes(s.site)) managerSites[m].push(s.site);
+                }
+            });
+
+            select.innerHTML = '<option value="ALL">전체 소장님 (전체 현장)</option>';
+            Object.keys(managerSites).forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = `${m} 소장님 (${managerSites[m].slice(0, 3).join('/')})`;
+                select.appendChild(opt);
+            });
+            if (prevVal !== 'ALL' && managerSites[prevVal]) {
+                select.value = prevVal;
+            } else {
+                currentManagerFilter = 'ALL';
+                select.value = 'ALL';
+            }
+        }
+
+        // 현장별 건수 사전 계산
+        function getSiteCountsMap() {
+            let visibleCount = 0;
+            const map = {};
+            rawData.forEach(r => {
+                if (isAdminUnlocked || r.site !== '본사') {
+                    visibleCount++;
+                }
+                map[r.site] = (map[r.site] || 0) + 1;
+            });
+            map['ALL'] = visibleCount;
+            return map;
+        }
+
+        // 1단계: 현장 선택 버튼 리스트 렌더링 (전체 현장 보기 바로 옆에 기타/미지정 배치)
+        function renderSiteButtons() {
+            const container = document.getElementById('siteButtonList');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const countsMap = getSiteCountsMap();
+            const siteMetaMap = {};
+            sitesData.forEach(s => { siteMetaMap[s.site] = s; });
+
+            const allSiteKeys = new Set();
+            allSiteKeys.add('기타/미지정');
+
+            sitesData.forEach(s => {
+                if ((countsMap[s.site] || 0) > 0 || s.contractAmt > 0 || s.site === '본사') {
+                    allSiteKeys.add(s.site);
+                }
+            });
+            rawData.forEach(r => {
+                if (r.site) allSiteKeys.add(r.site);
+            });
+
+            let siteList = Array.from(allSiteKeys);
+
+            // 정렬 우선순위: 1순위 '기타/미지정' (전체 현장 보기 바로 옆), 그 외에는 공사목록 등록 순서 유지
+            siteList.sort((a, b) => {
+                if (a === '기타/미지정') return -1;
+                if (b === '기타/미지정') return 1;
+                const idxA = sitesData.findIndex(s => s.site === a);
+                const idxB = sitesData.findIndex(s => s.site === b);
+                if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                if (idxA !== -1) return -1;
+                if (idxB !== -1) return 1;
+                return a.localeCompare(b, 'ko');
+            });
+
+            // 소장님 필터 적용 시
+            if (currentManagerFilter !== 'ALL') {
+                siteList = siteList.filter(siteKey => {
+                    const meta = siteMetaMap[siteKey];
+                    return meta && meta.manager === currentManagerFilter;
+                });
+            }
+
+            // 1번째 버튼: 전체 현장 보기 (소장님 필터가 ALL일 때 맨 앞 배치)
+            if (currentManagerFilter === 'ALL') {
+                const allBtn = document.createElement('button');
+                allBtn.type = 'button';
+                const isActive = currentSite === 'ALL';
+                allBtn.className = `site-btn text-left p-3 rounded-2xl border-2 flex flex-col justify-between min-h-[76px] ${
+                    isActive
+                        ? 'active bg-blue-900 text-white border-blue-900'
+                        : 'bg-amber-50/70 text-slate-900 border-amber-300 hover:bg-amber-100'
+                }`;
+                allBtn.innerHTML = `
+                    <div class="flex items-center justify-between w-full gap-1">
+                        <span class="site-btn-title text-sm sm:text-base font-black truncate">🏢 전체 현장 보기</span>
+                        <span class="site-count text-xs font-black px-2 py-0.5 rounded-full bg-amber-200 text-slate-900 flex-shrink-0">${new Intl.NumberFormat('ko-KR').format(countsMap.ALL || 0)}건</span>
+                    </div>
+                    <div class="site-sub text-xs font-bold text-slate-600 mt-1 truncate">
+                        일우건설 전 현장 통합
+                    </div>
+                `;
+                allBtn.addEventListener('click', () => selectSite('ALL'));
+                container.appendChild(allBtn);
+            }
+
+            // 2번째 버튼부터: 기타/미지정 -> 각 현장 버튼
+            siteList.forEach(siteKey => {
+                if (siteKey === '본사' && !isAdminUnlocked) {
+                    return;
+                }
+                const meta = siteMetaMap[siteKey] || {
+                    site: siteKey,
+                    fullName: siteKey === '기타/미지정' ? '현장 미지정 내역' : siteKey,
+                    manager: '-'
+                };
+                const cnt = countsMap[siteKey] || 0;
+                const isActive = currentSite === siteKey;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `site-btn text-left p-3 rounded-2xl border-2 flex flex-col justify-between min-h-[76px] ${
+                    isActive
+                        ? 'active bg-blue-900 text-white border-blue-900'
+                        : 'bg-slate-50 text-slate-800 border-slate-300 hover:bg-blue-50 hover:border-blue-300'
+                }`;
+
+                let managerBadge = (meta.manager && meta.manager !== '-') ? `${meta.manager} 소장` : '본사/공통';
+                if (siteKey === '본사') {
+                    managerBadge = '관리자모드';
+                }
+                const iconStr = siteKey === '본사' ? '🏛️' : (siteKey === '기타/미지정' ? '📂' : '🏗️');
+
+                btn.innerHTML = `
+                    <div class="flex items-center justify-between w-full gap-1">
+                        <span class="site-btn-title text-sm sm:text-base font-black truncate">${iconStr} ${siteKey}</span>
+                        <span class="site-count text-xs font-extrabold px-2 py-0.5 rounded-full bg-slate-200 text-slate-800 flex-shrink-0">${new Intl.NumberFormat('ko-KR').format(cnt)}건</span>
+                    </div>
+                    <div class="site-sub flex items-center justify-between text-xs font-bold text-slate-500 mt-1 gap-1">
+                        <span class="truncate">${meta.fullName || siteKey}</span>
+                        <span class="flex-shrink-0 text-blue-700 font-extrabold ${isActive ? '!text-amber-300' : ''}">${managerBadge}</span>
+                    </div>
+                `;
+                btn.addEventListener('click', () => selectSite(siteKey));
+                container.appendChild(btn);
+            });
+        }
+
+        // 선택된 현장 배지 텍스트 동기화
+        function syncSelectedSiteBadge() {
+            const badge = document.getElementById('selectedSiteNameBadge');
+            if (!badge) return;
+            const meta = sitesData.find(s => s.site === currentSite);
+            if (currentSite === 'ALL') {
+                badge.innerText = '전체 현장 통합 보기';
+            } else if (meta && meta.manager && meta.manager !== '-') {
+                badge.innerText = `${currentSite} (${meta.manager} 소장님)`;
+            } else {
+                badge.innerText = `${currentSite} 현장`;
+            }
+        }
+
+        // 현장 선택 변경
+        function selectSite(site) {
+            if (site === '본사' && !isAdminUnlocked) {
+                openAdminPinModal();
+                return;
+            }
+            currentSite = site;
+            displayLimit = 200;
+            renderSiteButtons();
+            syncSelectedSiteBadge();
+            updateDisplay();
+        }
+
+        // 카테고리 탭 변경 (매출 / 매입 / 통장)
+        function switchCategory(category) {
+            currentCategory = category;
+            displayLimit = 200;
+
+            const tabSales = document.getElementById('tabSales');
+            const tabPurchase = document.getElementById('tabPurchase');
+            const tabBank = document.getElementById('tabBank');
+
+            tabSales.classList.remove('active-sales', 'active-purchase', 'active-bank');
+            tabPurchase.classList.remove('active-sales', 'active-purchase', 'active-bank');
+            tabBank.classList.remove('active-sales', 'active-purchase', 'active-bank');
+
+            const bankSubFilterBox = document.getElementById('bankSubFilterBox');
+
+            if (category === 'SALES') {
+                tabSales.classList.add('active-sales');
+                bankSubFilterBox.classList.add('hidden');
+            } else if (category === 'PURCHASE') {
+                tabPurchase.classList.add('active-purchase');
+                bankSubFilterBox.classList.add('hidden');
+            } else if (category === 'BANK') {
+                tabBank.classList.add('active-bank');
+                bankSubFilterBox.classList.remove('hidden');
+            }
+
+            updateDisplay();
+        }
+
+        // 공사 개요 배너 업데이트 (요청 2번-B: 전체 현장일 때는 상단 라벨을 '전체 현장 매출합계'로 바꾸고 숫자만 한 줄로 깔끔하게 출력)
+        function updateOverviewBanner(filteredBySite, salesTotal, bankInTotal, bankOutTotal) {
+            const meta = sitesData.find(s => s.site === currentSite);
+            const bannerType = document.getElementById('bannerSiteType');
+            const bannerFullName = document.getElementById('bannerFullName');
+            const bannerAddress = document.getElementById('bannerAddress');
+            const bannerManager = document.getElementById('bannerManager');
+            const bannerContractLabel = document.getElementById('bannerContractLabel');
+            const bannerContractAmt = document.getElementById('bannerContractAmt');
+            const bannerPeriod = document.getElementById('bannerPeriod');
+            const bannerCollectionRate = document.getElementById('bannerCollectionRate');
+
+            if (currentSite === 'ALL' || !meta) {
+                bannerType.innerText = currentSite === 'ALL' ? '전체 현장 통합' : '현장 조회';
+                bannerFullName.innerText = currentSite === 'ALL' ? '(주)일우건설 전체 현장 통합 장부' : `${currentSite} 상세 내역`;
+                bannerAddress.innerHTML = `<i class="fa-solid fa-circle-info text-amber-400"></i> <span>총 ${new Intl.NumberFormat('ko-KR').format(filteredBySite.length)}건의 세금계산서 및 통장 입출금 내역이 조회되었습니다.</span>`;
+                bannerManager.innerText = currentSite === 'ALL' ? '전체 현장소장님' : '-';
+                if (bannerContractLabel) bannerContractLabel.innerText = currentSite === 'ALL' ? '전체 현장 매출합계' : '현장 매출합계';
+                bannerContractAmt.innerHTML = `<div class="whitespace-nowrap">${formatKoreanUnit(salesTotal)}</div>`;
+                bannerPeriod.innerText = '2026년 기준';
+                const profit = bankInTotal - bankOutTotal;
+                const profitRate = bankInTotal > 0 ? ((profit / bankInTotal) * 100).toFixed(1) + '%' : '-';
+                bannerCollectionRate.innerText = `이익률 ${profitRate}`;
+                return;
+            }
+
+            bannerType.innerText = meta.type || '원도급';
+            bannerFullName.innerText = meta.fullName || `${meta.site} 공사현장`;
+            bannerAddress.innerHTML = `<i class="fa-solid fa-location-dot text-amber-400"></i> <span>${meta.address || '주소 정보 없음'}</span>`;
+            bannerManager.innerText = (meta.manager && meta.manager !== '-') ? `${meta.manager} 소장님` : (meta.site === '본사' ? '관리자모드' : '본사/공통');
+            if (bannerContractLabel) bannerContractLabel.innerText = '총 공사 계약금액';
+
+            if (meta.contractAmt > 0) {
+                bannerContractAmt.innerHTML = `<div class="whitespace-nowrap">${formatKoreanUnit(meta.contractAmt)}</div><div class="text-xs text-blue-200 font-normal whitespace-nowrap">${formatKRW(meta.contractAmt)}</div>`;
+                const collRate = ((bankInTotal / meta.contractAmt) * 100).toFixed(1);
+                let dDayStr = '';
+                if (meta.endDate) {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const end = new Date(meta.endDate + 'T00:00:00');
+                    if (!isNaN(end.getTime())) {
+                        const diffDays = Math.round((end - today) / (1000 * 60 * 60 * 24));
+                        dDayStr = diffDays >= 0 ? ` (D-${diffDays}일)` : ` (준공+${Math.abs(diffDays)}일)`;
+                    }
+                }
+                bannerCollectionRate.innerText = `수금률 ${collRate}%${dDayStr}`;
+            } else {
+                bannerContractAmt.innerText = '별도 계약없음';
+                bannerCollectionRate.innerText = '-';
+            }
+
+            if (meta.startDate || meta.endDate) {
+                bannerPeriod.innerHTML = `<div class="whitespace-nowrap">${meta.startDate || '-'} ~</div><div class="whitespace-nowrap">${meta.endDate || '-'}</div>`;
+            } else {
+                bannerPeriod.innerText = '상시 관리';
+            }
+        }
+
+        // 조건별 필터링 목록 반환 (화면 렌더링, 엑셀 다운로드, 인쇄에서 공통 사용)
+        function getCurrentFilteredList(ignoreUnpaidFilter = false) {
+            let list = rawData;
+            if (currentSite !== 'ALL') {
+                list = list.filter(d => d.site === currentSite);
+            } else if (!isAdminUnlocked) {
+                list = list.filter(d => d.site !== '본사');
+            }
+
+            if (currentCategory === 'SALES') {
+                list = list.filter(d => d.cat === '매출');
+            } else if (currentCategory === 'PURCHASE') {
+                list = list.filter(d => d.cat === '매입');
+            } else if (currentCategory === 'BANK') {
+                list = list.filter(d => d.cat === '입금' || d.cat === '출금');
+                if (currentBankType !== 'ALL') {
+                    list = list.filter(d => d.cat === currentBankType);
+                }
+            }
+
+            if (currentMonth !== 'ALL') {
+                const mNum = parseInt(currentMonth, 10);
+                list = list.filter(d => d.month === mNum);
+            }
+
+            if (currentSearch.trim() !== '') {
+                const q = currentSearch.trim().toLowerCase();
+                list = list.filter(d =>
+                    (d.partner && d.partner.toLowerCase().includes(q)) ||
+                    (d.item && d.item.toLowerCase().includes(q)) ||
+                    (d.note && d.note.toLowerCase().includes(q)) ||
+                    (d.site && d.site.toLowerCase().includes(q)) ||
+                    (d.bizNo && d.bizNo.toLowerCase().includes(q))
+                );
+            }
+
+            // 미결제 필터는 세금계산서(매출/매입) 탭에서만 적용 (통장 입출금 탭은 이미 입출금된 내역이므로 제외)
+            if (!ignoreUnpaidFilter && onlyUnpaid && currentCategory !== 'BANK') {
+                list = list.filter(d => isUnpaidRecord(d));
+            }
+
+            // 정렬
+            const sorted = [...list];
+            sorted.sort((a, b) => {
+                if (currentSort === 'DATE_DESC') {
+                    return b.date.localeCompare(a.date) || (b.id - a.id);
+                } else if (currentSort === 'DATE_ASC') {
+                    return a.date.localeCompare(b.date) || (a.id - b.id);
+                } else if (currentSort === 'AMT_DESC') {
+                    return Math.abs(b.total) - Math.abs(a.total);
+                } else if (currentSort === 'AMT_ASC') {
+                    return Math.abs(a.total) - Math.abs(b.total);
+                } else if (currentSort === 'PARTNER_ASC') {
+                    return (a.partner || '').localeCompare(b.partner || '', 'ko');
+                }
+                return 0;
+            });
+
+            return sorted;
+        }
+
+        // 미결제 필터 버튼 UI 상태 업데이트 (요청 3번: 간결한 문구와 줄바꿈 방지로 항상 3개 버튼이 한 줄 유지)
+        function updateUnpaidFilterButtonUI(unpaidCount) {
+            const btn = document.getElementById('btnFilterUnpaid');
+            const textEl = document.getElementById('unpaidBtnText');
+            const badgeEl = document.getElementById('unpaidCountBadge');
+            const activeTag = document.getElementById('unpaidFilterActiveTag');
+            if (!btn || !textEl || !badgeEl) return;
+
+            badgeEl.innerText = `${new Intl.NumberFormat('ko-KR').format(unpaidCount)}건`;
+
+            if (currentCategory === 'BANK') {
+                btn.className = "whitespace-nowrap shrink-0 bg-white hover:bg-rose-50 text-rose-700 text-xs sm:text-sm font-black px-3.5 py-2.5 rounded-xl transition flex items-center shadow-sm border-2 border-rose-300";
+                textEl.innerText = "매입 미결제 보기";
+                badgeEl.className = "ml-1.5 bg-rose-100 text-rose-800 text-xs font-black px-2 py-0.5 rounded-full num-font";
+                if (activeTag) activeTag.classList.add('hidden');
+                return;
+            }
+
+            if (onlyUnpaid) {
+                btn.className = "whitespace-nowrap shrink-0 bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-black px-3.5 py-2.5 rounded-xl transition flex items-center shadow-md border-2 border-rose-700 ring-2 ring-rose-200";
+                textEl.innerText = "미결제 필터 해제";
+                badgeEl.className = "ml-1.5 bg-white text-rose-700 text-xs font-black px-2 py-0.5 rounded-full num-font";
+                if (activeTag) activeTag.classList.remove('hidden');
+            } else {
+                btn.className = "whitespace-nowrap shrink-0 bg-white hover:bg-rose-50 text-rose-700 text-xs sm:text-sm font-black px-3.5 py-2.5 rounded-xl transition flex items-center shadow-sm border-2 border-rose-400";
+                textEl.innerText = "미결제만 보기";
+                badgeEl.className = "ml-1.5 bg-rose-100 text-rose-800 text-xs font-black px-2 py-0.5 rounded-full num-font";
+                if (activeTag) activeTag.classList.add('hidden');
+            }
+        }
+
+        // 메인 화면 업데이트 및 렌더링
+        function updateDisplay() {
+            if (currentSite === '본사' && !isAdminUnlocked) {
+                currentSite = 'ALL';
+            }
+            syncSelectedSiteBadge();
+
+            // 1. 현장 기준 필터링
+            let filteredBySite = rawData;
+            if (currentSite !== 'ALL') {
+                filteredBySite = rawData.filter(d => d.site === currentSite);
+            } else if (!isAdminUnlocked) {
+                filteredBySite = rawData.filter(d => d.site !== '본사');
+            }
+
+            // 2. 현장 전체 요약값 계산
+            let salesTotal = 0, salesSupply = 0, salesCnt = 0;
+            let purchaseTotal = 0, purchaseSupply = 0, purchaseCnt = 0;
+            let bankInTotal = 0, bankOutTotal = 0, bankCnt = 0;
+
+            filteredBySite.forEach(d => {
+                if (d.cat === '매출') {
+                    salesTotal += d.total;
+                    salesSupply += d.supply;
+                    salesCnt++;
+                } else if (d.cat === '매입') {
+                    purchaseTotal += d.total;
+                    purchaseSupply += d.supply;
+                    purchaseCnt++;
+                } else if (d.cat === '입금' || d.cat === '출금') {
+                    bankInTotal += d.inAmt;
+                    bankOutTotal += d.outAmt;
+                    bankCnt++;
+                }
+            });
+
+            // 탭 카운트 배지 업데이트
+            document.getElementById('tabSalesCount').innerText = `총 ${new Intl.NumberFormat('ko-KR').format(salesCnt)}건 (${formatKoreanUnit(salesTotal)})`;
+            document.getElementById('tabPurchaseCount').innerText = `총 ${new Intl.NumberFormat('ko-KR').format(purchaseCnt)}건 (${formatKoreanUnit(purchaseTotal)})`;
+            document.getElementById('tabBankCount').innerText = `총 ${new Intl.NumberFormat('ko-KR').format(bankCnt)}건 (차액 ${formatKoreanUnit(bankInTotal - bankOutTotal)})`;
+
+            // 상단 4대 요약 카드 업데이트
+            document.getElementById('cardSalesBadge').innerText = `${new Intl.NumberFormat('ko-KR').format(salesCnt)}건`;
+            document.getElementById('summaryValue1').innerText = formatKRW(salesTotal);
+            document.getElementById('summarySub1').innerText = `공급가액: ${formatKRW(salesSupply)} (${formatKoreanUnit(salesTotal)})`;
+
+            document.getElementById('cardPurchaseBadge').innerText = `${new Intl.NumberFormat('ko-KR').format(purchaseCnt)}건`;
+            document.getElementById('summaryValue2').innerText = formatKRW(purchaseTotal);
+            document.getElementById('summarySub2').innerText = `공급가액: ${formatKRW(purchaseSupply)} (${formatKoreanUnit(purchaseTotal)})`;
+
+            document.getElementById('cardBankBadge').innerText = `${new Intl.NumberFormat('ko-KR').format(bankCnt)}건`;
+            document.getElementById('summaryBankIn').innerText = formatKRW(bankInTotal);
+            document.getElementById('summaryBankOut').innerText = formatKRW(bankOutTotal);
+
+            const balance = bankInTotal - bankOutTotal;
+            const summaryVal3El = document.getElementById('summaryValue3');
+            summaryVal3El.innerText = formatKRW(balance);
+            summaryVal3El.className = `text-xl sm:text-2xl font-black mt-1.5 num-font tracking-tight ${balance >= 0 ? 'text-emerald-700' : 'text-rose-700'}`;
+            const profitRateStr = bankInTotal > 0 ? `이익률 ${((balance / bankInTotal) * 100).toFixed(1)}%` : '입금내역 없음';
+            document.getElementById('cardProfitRateBadge').innerText = profitRateStr;
+            document.getElementById('summarySub3').innerText = `통장 입금 - 출금 (${formatKoreanUnit(balance)})`;
+
+            // 공사 개요 배너 업데이트
+            updateOverviewBanner(filteredBySite, salesTotal, bankInTotal, bankOutTotal);
+
+            // 3. 현재 조건의 미결제 건수 계산 (통장 탭일 때는 매입 미결제 건수를 기준 표시)
+            let unpaidCountInCurrentView = 0;
+            if (currentCategory === 'BANK') {
+                unpaidCountInCurrentView = filteredBySite.filter(d => d.cat === '매입' && isUnpaidRecord(d)).length;
+            } else {
+                const listWithoutUnpaidFilter = getCurrentFilteredList(true);
+                unpaidCountInCurrentView = listWithoutUnpaidFilter.filter(d => isUnpaidRecord(d)).length;
+            }
+            updateUnpaidFilterButtonUI(unpaidCountInCurrentView);
+
+            // 실제 화면에 표시할 데이터 목록
+            const categoryData = getCurrentFilteredList(false);
+
+            let titleText = '';
+            let subtitleText = '';
+            const siteLabel = currentSite === 'ALL' ? '전체 현장' : `[${currentSite}] 현장`;
+
+            // 요청 4번 반영: 뒤쪽의 (합계금액 -> 공급가액...) 괄호 문구 전면 삭제하여 깔끔한 한 줄 설명 유지
+            if (currentCategory === 'SALES') {
+                titleText = `📈 ${siteLabel} - 매출 (세금계산서 발행) 내역`;
+                subtitleText = '발주처에 발행한 매출 세금계산서 내역입니다.';
+            } else if (currentCategory === 'PURCHASE') {
+                titleText = `📉 ${siteLabel} - 매입 (세금계산서 수취) 내역`;
+                subtitleText = '하도급사·자재·장비 업체로부터 수취한 매입 세금계산서 내역입니다.';
+            } else if (currentCategory === 'BANK') {
+                titleText = `🏦 ${siteLabel} - 통장 입출금 대장 내역`;
+                subtitleText = '실제 통장에서 입금·출금된 내역입니다.';
+            }
+
+            document.getElementById('tableTitle').innerHTML = `<i class="fa-solid fa-table text-blue-600 mr-2"></i> ${titleText}`;
+            document.getElementById('tableSubtitle').innerText = subtitleText;
+            document.getElementById('tableCountBadge').innerText = `총 ${new Intl.NumberFormat('ko-KR').format(categoryData.length)}건`;
+
+            // 주요 거래처별 집계 렌더링
+            renderPartnerSummary(categoryData);
+
+            // 상세 테이블 렌더링
+            renderTable(categoryData);
+        }
+
+        // 주요 거래처별 상위 10곳 요약 렌더링
+        function renderPartnerSummary(dataList) {
+            const grid = document.getElementById('partnerSummaryGrid');
+            const titleEl = document.getElementById('partnerSummaryTitle');
+            if (!grid) return;
+
+            const siteLabel = currentSite === 'ALL' ? '전체 현장' : `[${currentSite}]`;
+            const catLabel = currentCategory === 'SALES' ? '매출 거래처' : (currentCategory === 'PURCHASE' ? '매입 거래처' : '통장 거래처');
+            titleEl.innerText = `${siteLabel} ${catLabel}별 금액 합계 (상위 10곳)`;
+
+            if (dataList.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-4 text-slate-400 font-bold text-sm">${isInitialLoad ? '구글 시트에서 데이터를 불러오는 중입니다...' : '집계할 거래 내역이 없습니다.'}</div>`;
+                return;
+            }
+
+            const partnerMap = {};
+            dataList.forEach(d => {
+                const pName = (d.partner && d.partner !== '-') ? d.partner : '기타/미지정';
+                if (!partnerMap[pName]) {
+                    partnerMap[pName] = { partner: pName, count: 0, total: 0, sampleItem: d.item };
+                }
+                partnerMap[pName].count += 1;
+                if (currentCategory === 'BANK') {
+                    partnerMap[pName].total += (d.outAmt > 0 ? d.outAmt : d.inAmt);
+                } else {
+                    partnerMap[pName].total += d.total;
+                }
+            });
+
+            const sortedPartners = Object.values(partnerMap)
+                .sort((a, b) => Math.abs(b.total) - Math.abs(a.total))
+                .slice(0, 10);
+
+            grid.innerHTML = '';
+            sortedPartners.forEach((p, idx) => {
+                const card = document.createElement('button');
+                card.type = 'button';
+                const isSelected = currentSearch.trim() === p.partner;
+                card.className = `text-left p-2.5 rounded-xl border-2 transition flex flex-col justify-between ${
+                    isSelected
+                        ? 'bg-blue-900 text-white border-blue-900 shadow-md'
+                        : 'bg-slate-50 hover:bg-blue-50 text-slate-800 border-slate-200 hover:border-blue-300'
+                }`;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between gap-1 w-full">
+                        <span class="text-xs sm:text-sm font-black truncate">${idx + 1}. ${p.partner}</span>
+                        <span class="text-xs font-bold px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-amber-400 text-slate-950' : 'bg-slate-200 text-slate-700'} flex-shrink-0">${p.count}건</span>
+                    </div>
+                    <div class="mt-1.5">
+                        <div class="text-sm sm:text-base font-black num-font ${isSelected ? 'text-amber-300' : 'text-blue-900'}">${formatKRW(p.total)}</div>
+                        <div class="text-xs ${isSelected ? 'text-blue-200' : 'text-slate-500'} truncate mt-0.5">${p.sampleItem || '-'}</div>
+                    </div>
+                `;
+                card.addEventListener('click', () => {
+                    const searchInput = document.getElementById('searchInput');
+                    const clearBtn = document.getElementById('btnClearSearch');
+                    if (currentSearch.trim() === p.partner) {
+                        currentSearch = '';
+                        searchInput.value = '';
+                        clearBtn.classList.add('hidden');
+                    } else {
+                        currentSearch = p.partner;
+                        searchInput.value = p.partner;
+                        clearBtn.classList.remove('hidden');
+                    }
+                    displayLimit = 200;
+                    updateDisplay();
+                });
+                grid.appendChild(card);
+            });
+        }
+
+        // 상세 테이블 출력 (합계금액 -> 공급가액 -> 부가세 순서 & 부가세-결제여부 겹침 완벽 방지)
+        function renderTable(dataList) {
+            const thead = document.getElementById('dataTableHead');
+            const tbody = document.getElementById('dataTableBody');
+            const loadMoreContainer = document.getElementById('loadMoreContainer');
+            const loadMoreBtnText = document.getElementById('loadMoreBtnText');
+            const barCountText = document.getElementById('barCountText');
+            const barAmountsContainer = document.getElementById('barAmountsContainer');
+
+            tbody.innerHTML = '';
+
+            // 1. 카테고리별 테이블 헤더 구성 (우측 부가세 11%, 결제여부 10.5% 확보하여 큰 금액도 절대 겹치지 않도록 배분)
+            if (currentCategory === 'BANK') {
+                thead.innerHTML = `
+                    <tr>
+                        <th class="w-[8.5%] text-center">일자</th>
+                        <th class="w-[7.5%] text-center">현장명</th>
+                        <th class="w-[5.5%] text-center">구분</th>
+                        <th class="w-[14.5%]">거래처</th>
+                        <th class="w-[18%]">적요 / 거래내용</th>
+                        <th class="w-[13%] text-right text-emerald-800">입금액</th>
+                        <th class="w-[13%] text-right text-rose-800">출금액</th>
+                        <th class="w-[10.5%] text-right text-slate-600">공급가액</th>
+                        <th class="w-[9.5%] text-center">계산서/비고</th>
+                    </tr>
+                `;
+            } else {
+                // 품목명/공종을 15.5%로 줄이고 합계금액(13.5%), 공급가액(13%), 부가세(11%), 결제여부(10.5%)로 넉넉히 배정
+                thead.innerHTML = `
+                    <tr>
+                        <th class="w-[8.5%] text-center">일자</th>
+                        <th class="w-[7.5%] text-center">현장명</th>
+                        <th class="w-[5.5%] text-center">구분</th>
+                        <th class="w-[15%]">상호 (거래처명)</th>
+                        <th class="w-[15.5%]">품목명 / 공종</th>
+                        <th class="w-[13.5%] text-right text-blue-900">합계금액</th>
+                        <th class="w-[13%] text-right">공급가액</th>
+                        <th class="w-[11%] text-right">부가세</th>
+                        <th class="w-[10.5%] text-center">결제여부</th>
+                    </tr>
+                `;
+            }
+
+            // 전체 데이터 합계 계산
+            let sumSupply = 0, sumVat = 0, sumTotal = 0, sumIn = 0, sumOut = 0;
+            dataList.forEach(item => {
+                sumSupply += item.supply || 0;
+                sumVat += item.vat || 0;
+                sumTotal += item.total || 0;
+                sumIn += item.inAmt || 0;
+                sumOut += item.outAmt || 0;
+            });
+
+            // 상단 요약 바 업데이트 (합계금액 -> 공급가액 -> 부가세 순)
+            barCountText.innerText = `총 ${new Intl.NumberFormat('ko-KR').format(dataList.length)} 건`;
+            if (currentCategory === 'BANK') {
+                barAmountsContainer.innerHTML = `
+                    <span class="text-blue-950 bg-amber-200 px-2.5 py-0.5 rounded-lg">차액: ${formatKRW(sumIn - sumOut)}</span>
+                    <span class="text-emerald-700">총 입금: ${formatKRW(sumIn)}</span>
+                    <span class="text-rose-700">총 출금: ${formatKRW(sumOut)}</span>
+                `;
+            } else {
+                barAmountsContainer.innerHTML = `
+                    <span class="text-blue-950 bg-amber-200 px-2.5 py-0.5 rounded-lg">합계금액: ${formatKRW(sumTotal)}</span>
+                    <span class="text-slate-700">공급가액: ${formatKRW(sumSupply)}</span>
+                    <span class="text-slate-600">부가세: ${formatKRW(sumVat)}</span>
+                `;
+            }
+
+            if (dataList.length === 0) {
+                const emptyMsg = isInitialLoad
+                    ? '<i class="fa-solid fa-spinner fa-spin text-3xl mb-2 block text-blue-600"></i>구글 시트에서 최신 장부 데이터를 실시간으로 불러오는 중입니다...'
+                    : (onlyUnpaid ? '<i class="fa-regular fa-folder-open text-3xl mb-2 block text-slate-400"></i>현재 조건에서 미결제(결제여부 빈칸) 내역이 없습니다.' : '<i class="fa-regular fa-folder-open text-3xl mb-2 block text-slate-400"></i>선택하신 조건에 해당하는 내역이 없습니다.');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center py-12 text-slate-600 font-black text-base sm:text-lg">
+                            ${emptyMsg}
+                        </td>
+                    </tr>
+                `;
+                loadMoreContainer.classList.add('hidden');
+            } else {
+                const sliced = dataList.slice(0, displayLimit);
+                const fragment = document.createDocumentFragment();
+
+                sliced.forEach(item => {
+                    const tr = document.createElement('tr');
+                    const isNegative = item.total < 0;
+                    const unpaid = isUnpaidRecord(item);
+                    tr.className = `hover:bg-blue-50/60 transition-colors ${isNegative ? 'bg-rose-50/40' : (unpaid ? 'bg-amber-50/30' : '')}`;
+
+                    let badgeColor = 'bg-blue-100 text-blue-900 border border-blue-300';
+                    if (item.cat === '매입') badgeColor = 'bg-orange-100 text-orange-900 border border-orange-300';
+                    if (item.cat === '입금') badgeColor = 'bg-emerald-100 text-emerald-900 border border-emerald-300';
+                    if (item.cat === '출금') badgeColor = 'bg-rose-100 text-rose-900 border border-rose-300';
+
+                    if (currentCategory === 'BANK') {
+                        let bankNoteHtml = '<span class="text-xs text-slate-400">-</span>';
+                        if (item.note === '1') {
+                            bankNoteHtml = '<span class="inline-block bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-black px-2 py-0.5 rounded">세금계산서</span>';
+                        } else if (item.note) {
+                            bankNoteHtml = `<span class="inline-block bg-slate-100 text-slate-700 border border-slate-300 text-xs font-bold px-2 py-0.5 rounded">${item.note}</span>`;
+                        }
+
+                        tr.innerHTML = `
+                            <td class="text-center text-slate-900 font-bold num-font whitespace-nowrap">${item.date}</td>
+                            <td class="text-center text-slate-800 font-extrabold truncate" title="${item.site}">${item.site}</td>
+                            <td class="text-center">
+                                <span class="${badgeColor} text-xs px-2 py-0.5 rounded-full font-black inline-block">${item.cat}</span>
+                            </td>
+                            <td class="font-black text-slate-900 leading-snug">${item.partner}</td>
+                            <td class="text-slate-800 font-bold leading-snug">${item.item}</td>
+                            <td class="num-cell text-right font-black text-emerald-700 num-font" title="${item.inAmt > 0 ? formatKRW(item.inAmt) : ''}">${item.inAmt > 0 ? formatKRW(item.inAmt) : '-'}</td>
+                            <td class="num-cell text-right font-black text-rose-700 num-font" title="${item.outAmt > 0 ? formatKRW(item.outAmt) : ''}">${item.outAmt > 0 ? formatKRW(item.outAmt) : '-'}</td>
+                            <td class="num-cell text-right text-slate-600 num-font" title="${item.supply > 0 ? formatKRW(item.supply) : ''}">${item.supply > 0 ? formatKRW(item.supply) : '-'}</td>
+                            <td class="text-center px-1">${bankNoteHtml}</td>
+                        `;
+                    } else {
+                        const payBadgeHtml = unpaid
+                            ? `<span class="inline-block bg-rose-100 text-rose-700 border border-rose-300 text-xs font-black px-2 py-0.5 rounded">미결제</span>`
+                            : `<span class="inline-block text-xs font-bold text-slate-800 num-font bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">${item.note}</span>`;
+
+                        const paperBadge = item.paper ? `<span class="bg-amber-100 text-amber-900 text-xs font-black px-1.5 py-0.5 rounded mr-1">[${item.paper}]</span>` : '';
+                        const ceoSub = (item.ceo || item.bizNo)
+                            ? `<div class="text-xs text-slate-500 font-medium leading-tight mt-0.5 truncate" title="${item.ceo ? `대표: ${item.ceo}` : ''} ${item.bizNo ? `(${item.bizNo})` : ''}">${item.ceo ? `대표: ${item.ceo}` : ''} ${item.bizNo ? `(${item.bizNo})` : ''}</div>`
+                            : '';
+
+                        tr.innerHTML = `
+                            <td class="text-center text-slate-900 font-bold num-font whitespace-nowrap">${item.date}</td>
+                            <td class="text-center text-slate-800 font-extrabold truncate" title="${item.site}">${item.site}</td>
+                            <td class="text-center">
+                                <span class="${badgeColor} text-xs px-2 py-0.5 rounded-full font-black inline-block">${item.cat}</span>
+                            </td>
+                            <td>
+                                <div class="font-black text-slate-900 leading-snug">${item.partner}</div>
+                                ${ceoSub}
+                            </td>
+                            <td class="text-slate-800 font-bold leading-snug">${paperBadge}${item.item}</td>
+                            <td class="num-cell text-right font-black ${isNegative ? 'text-rose-700' : 'text-blue-900'} num-font" title="${formatKRW(item.total)}">${formatKRW(item.total)}</td>
+                            <td class="num-cell text-right text-slate-700 font-bold num-font" title="${formatKRW(item.supply)}">${formatKRW(item.supply)}</td>
+                            <td class="num-cell text-right text-slate-600 font-semibold num-font" title="${formatKRW(item.vat)}">${formatKRW(item.vat)}</td>
+                            <td class="text-center px-1">${payBadgeHtml}</td>
+                        `;
+                    }
+                    fragment.appendChild(tr);
+                });
+
+                tbody.appendChild(fragment);
+
+                if (dataList.length > displayLimit) {
+                    loadMoreContainer.classList.remove('hidden');
+                    const remain = dataList.length - displayLimit;
+                    loadMoreBtnText.innerText = `나머지 ${new Intl.NumberFormat('ko-KR').format(remain)}건 더 보기 (클릭)`;
+                } else {
+                    loadMoreContainer.classList.add('hidden');
+                }
+            }
+
+            // 하단 푸터 요약 업데이트
+            document.getElementById('dataCountText').innerText = `조회 내역: 총 ${new Intl.NumberFormat('ko-KR').format(dataList.length)} 건`;
+            if (currentCategory === 'BANK') {
+                document.getElementById('dataSumText').innerText = `입금: ${formatKRW(sumIn)} / 출금: ${formatKRW(sumOut)} (차액: ${formatKRW(sumIn - sumOut)})`;
+            } else {
+                document.getElementById('dataSumText').innerText = `합계 금액: ${formatKRW(sumTotal)} (공급가액: ${formatKRW(sumSupply)} / 부가세: ${formatKRW(sumVat)})`;
+            }
+        }
+
+        // =========================================================================
+        // 인쇄용 HTML 생성 및 미리보기 모달 / 새 창 인쇄 기능 (100% 작동 보장)
+        // =========================================================================
+        function buildPrintSheetHtml(printList) {
+            const siteLabel = currentSite === 'ALL' ? '전체 현장 통합' : `${currentSite} 현장`;
+            const catLabel = currentCategory === 'SALES'
+                ? '매출 (세금계산서 발행) 내역'
+                : (currentCategory === 'PURCHASE' ? '매입 (세금계산서 수취) 내역' : '통장 입출금 내역');
+            const monthLabel = currentMonth === 'ALL' ? '전체월' : `${currentMonth}월`;
+            const unpaidLabel = (onlyUnpaid && currentCategory !== 'BANK') ? ' [미결제 내역 한정]' : '';
+            const searchLabel = currentSearch.trim() ? ` / 검색어: "${currentSearch.trim()}"` : '';
+            const printDateStr = new Date().toLocaleString('ko-KR');
+
+            let sumSupply = 0, sumVat = 0, sumTotal = 0, sumIn = 0, sumOut = 0;
+            printList.forEach(item => {
+                sumSupply += item.supply || 0;
+                sumVat += item.vat || 0;
+                sumTotal += item.total || 0;
+                sumIn += item.inAmt || 0;
+                sumOut += item.outAmt || 0;
+            });
+
+            let tableHeadersHtml = '';
+            let tableRowsHtml = '';
+            let totalRowHtml = '';
+
+            if (currentCategory === 'BANK') {
+                tableHeadersHtml = `
+                    <tr>
+                        <th style="width:5%;">No</th>
+                        <th style="width:9%;">일자</th>
+                        <th style="width:8%;">현장</th>
+                        <th style="width:6%;">구분</th>
+                        <th style="width:15%;">거래처</th>
+                        <th style="width:21%;">적요 / 거래내용</th>
+                        <th style="width:12%;">입금액</th>
+                        <th style="width:12%;">출금액</th>
+                        <th style="width:12%;">공급가액/비고</th>
+                    </tr>
+                `;
+                tableRowsHtml = printList.map((item, idx) => `
+                    <tr>
+                        <td style="text-align:center;">${idx + 1}</td>
+                        <td style="text-align:center;">${item.date}</td>
+                        <td style="text-align:center;">${item.site}</td>
+                        <td style="text-align:center;">${item.cat}</td>
+                        <td>${item.partner || ''}</td>
+                        <td>${item.item || ''}</td>
+                        <td style="text-align:right; font-weight:700;">${item.inAmt > 0 ? new Intl.NumberFormat('ko-KR').format(item.inAmt) : ''}</td>
+                        <td style="text-align:right; font-weight:700;">${item.outAmt > 0 ? new Intl.NumberFormat('ko-KR').format(item.outAmt) : ''}</td>
+                        <td style="text-align:center;">${item.note === '1' ? '세금계산서' : (item.note || '')}</td>
+                    </tr>
+                `).join('');
+                totalRowHtml = `
+                    <tr class="print-total-row">
+                        <td colspan="6" style="text-align:center;">합 계 (총 ${new Intl.NumberFormat('ko-KR').format(printList.length)}건 / 차액: ${formatKRW(sumIn - sumOut)})</td>
+                        <td style="text-align:right;">${new Intl.NumberFormat('ko-KR').format(sumIn)}</td>
+                        <td style="text-align:right;">${new Intl.NumberFormat('ko-KR').format(sumOut)}</td>
+                        <td></td>
+                    </tr>
+                `;
+            } else {
+                tableHeadersHtml = `
+                    <tr>
+                        <th style="width:4%;">No</th>
+                        <th style="width:9%;">일자</th>
+                        <th style="width:8%;">현장</th>
+                        <th style="width:5%;">구분</th>
+                        <th style="width:16%;">상호(거래처)</th>
+                        <th style="width:18%;">품목명 / 공종</th>
+                        <th style="width:12%;">합계금액</th>
+                        <th style="width:11%;">공급가액</th>
+                        <th style="width:9%;">부가세</th>
+                        <th style="width:8%;">결제여부</th>
+                    </tr>
+                `;
+                tableRowsHtml = printList.map((item, idx) => `
+                    <tr>
+                        <td style="text-align:center;">${idx + 1}</td>
+                        <td style="text-align:center;">${item.date}</td>
+                        <td style="text-align:center;">${item.site}</td>
+                        <td style="text-align:center;">${item.cat}</td>
+                        <td>${item.partner || ''}${item.ceo ? ` (${item.ceo})` : ''}</td>
+                        <td>${item.paper ? `[${item.paper}] ` : ''}${item.item || ''}</td>
+                        <td style="text-align:right; font-weight:700;">${new Intl.NumberFormat('ko-KR').format(item.total || 0)}</td>
+                        <td style="text-align:right;">${new Intl.NumberFormat('ko-KR').format(item.supply || 0)}</td>
+                        <td style="text-align:right;">${new Intl.NumberFormat('ko-KR').format(item.vat || 0)}</td>
+                        <td style="text-align:center; font-weight:700; color:${isUnpaidRecord(item) ? '#be123c' : '#0f172a'};">${isUnpaidRecord(item) ? '미결제' : (item.note || '')}</td>
+                    </tr>
+                `).join('');
+                totalRowHtml = `
+                    <tr class="print-total-row">
+                        <td colspan="6" style="text-align:center;">합 계 (총 ${new Intl.NumberFormat('ko-KR').format(printList.length)}건)</td>
+                        <td style="text-align:right;">${new Intl.NumberFormat('ko-KR').format(sumTotal)}</td>
+                        <td style="text-align:right;">${new Intl.NumberFormat('ko-KR').format(sumSupply)}</td>
+                        <td style="text-align:right;">${new Intl.NumberFormat('ko-KR').format(sumVat)}</td>
+                        <td></td>
+                    </tr>
+                `;
+            }
+
+            return `
+                <div style="margin-bottom: 12px; border-bottom: 2px solid #0f172a; padding-bottom: 8px; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:8px;">
+                    <div>
+                        <div style="font-size: 15pt; font-weight: 900; color: #0f172a;">(주)일우건설 - ${siteLabel} ${catLabel}${unpaidLabel}</div>
+                        <div style="font-size: 9.5pt; color: #334155; margin-top: 3px;">조회조건: ${monthLabel}${searchLabel} | 총 ${new Intl.NumberFormat('ko-KR').format(printList.length)}건</div>
+                    </div>
+                    <div style="text-align:right; font-size: 9pt; color: #475569;">
+                        <div>출력일시: ${printDateStr}</div>
+                        <div style="font-weight:800; color:#0f172a; margin-top:2px;">
+                            ${currentCategory === 'BANK'
+                                ? `입금합계: ${formatKRW(sumIn)} | 출금합계: ${formatKRW(sumOut)} | 차액: ${formatKRW(sumIn - sumOut)}`
+                                : `합계금액: ${formatKRW(sumTotal)} (공급가액: ${formatKRW(sumSupply)} / 부가세: ${formatKRW(sumVat)})`}
+                        </div>
+                    </div>
+                </div>
+                <table class="print-sheet-table">
+                    <thead>${tableHeadersHtml}</thead>
+                    <tbody>
+                        ${tableRowsHtml}
+                        ${totalRowHtml}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function openPrintPreviewModal() {
+            const printList = getCurrentFilteredList(false);
+            if (printList.length === 0) {
+                showToast('인쇄할 내역이 없습니다.', 'error');
+                return;
+            }
+
+            const htmlContent = buildPrintSheetHtml(printList);
+            const printArea = document.getElementById('printLedgerArea');
+            const modalBox = document.getElementById('printModalContentBox');
+            const modal = document.getElementById('printPreviewModal');
+
+            if (printArea) printArea.innerHTML = htmlContent;
+            if (modalBox) modalBox.innerHTML = htmlContent;
+            if (modal) modal.classList.remove('hidden');
+
+            // 일반 브라우저 환경에서는 자동으로 인쇄 대화상자도 즉시 호출
+            setTimeout(() => {
+                try {
+                    window.print();
+                } catch (e) {
+                    // 샌드박스 차단 시 모달 화면 유지
+                }
+            }, 250);
+        }
+
+        function openPopupPrintWindow() {
+            const printList = getCurrentFilteredList(false);
+            if (printList.length === 0) return;
+            const htmlContent = buildPrintSheetHtml(printList);
+            const popup = window.open('', '_blank', 'width=1150,height=820,scrollbars=yes');
+            if (!popup) {
+                window.print();
+                return;
+            }
+            popup.document.write(`
+                <!DOCTYPE html>
+                <html lang="ko">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>(주)일우건설 장부 인쇄</title>
+                    <style>
+                        @page { size: A4 landscape; margin: 10mm; }
+                        body { font-family: 'Malgun Gothic', 'Noto Sans KR', sans-serif; margin: 16px; color: #0f172a; }
+                        .top-bar { display:flex; justify-content:space-between; align-items:center; background:#0f172a; color:#fff; padding:10px 16px; border-radius:8px; margin-bottom:16px; }
+                        .top-bar button { background:#f59e0b; color:#0f172a; border:none; padding:8px 18px; border-radius:6px; font-weight:900; font-size:14px; cursor:pointer; }
+                        .print-sheet-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 9.5pt; }
+                        .print-sheet-table thead { display: table-header-group; }
+                        .print-sheet-table tr { page-break-inside: avoid; }
+                        .print-sheet-table th, .print-sheet-table td { border: 1px solid #334155; padding: 5px 6px; word-break: break-all; vertical-align: middle; }
+                        .print-sheet-table th { background-color: #e2e8f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: 800; text-align: center; }
+                        .print-total-row td { background-color: #fef3c7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: 900; border-top: 2px solid #0f172a; }
+                        @media print { .top-bar { display: none !important; } body { margin: 0; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="top-bar">
+                        <span><strong>(주)일우건설</strong> - 인쇄 화면입니다. 우측 버튼을 누르면 출력됩니다.</span>
+                        <button onclick="window.print()">🖨️ 지금 바로 인쇄하기</button>
+                    </div>
+                    ${htmlContent}
+                    <script>
+                        window.onload = function() { setTimeout(function() { window.print(); }, 300); };
+                    <\/script>
+                </body>
+                </html>
+            `);
+            popup.document.close();
+        }
+
+        // =========================================================================
+        // 서식형 엑셀 워크시트 생성 엔진 (테두리, 배경색, 열너비 자동맞춤, 천단위 콤마)
+        // =========================================================================
+        function createStyledSheet({ title, subtitle, headers, rows, totalRow, colWidths, numericCols, centerCols, statusColIdx }) {
+            const aoa = [
+                [title],
+                [subtitle],
+                [],
+                headers,
+                ...rows
+            ];
+            if (totalRow && totalRow.length > 0) {
+                aoa.push(totalRow);
+            }
+
+            const ws = XLSX.utils.aoa_to_sheet(aoa);
+            const colCount = headers.length;
+
+            // 상단 1행(제목), 2행(부제목/요약) 셀 병합
+            ws['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: colCount - 1 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: colCount - 1 } }
+            ];
+
+            // 행 높이 설정 (제목줄, 요약줄, 헤더줄, 데이터줄 여유 있게 지정)
+            const rowHeights = [
+                { hpt: 32 },
+                { hpt: 22 },
+                { hpt: 8 },
+                { hpt: 26 }
+            ];
+            for (let i = 0; i < rows.length; i++) {
+                rowHeights.push({ hpt: 21 });
+            }
+            if (totalRow && totalRow.length > 0) {
+                rowHeights.push({ hpt: 26 });
+            }
+            ws['!rows'] = rowHeights;
+
+            // 열 너비 설정
+            ws['!cols'] = colWidths.map(w => ({ wch: w }));
+
+            // 공통 테두리 스타일
+            const thinBorder = {
+                top: { style: "thin", color: { rgb: "CBD5E1" } },
+                bottom: { style: "thin", color: { rgb: "CBD5E1" } },
+                left: { style: "thin", color: { rgb: "CBD5E1" } },
+                right: { style: "thin", color: { rgb: "CBD5E1" } }
+            };
+            const headerBorder = {
+                top: { style: "medium", color: { rgb: "0F172A" } },
+                bottom: { style: "medium", color: { rgb: "0F172A" } },
+                left: { style: "thin", color: { rgb: "475569" } },
+                right: { style: "thin", color: { rgb: "475569" } }
+            };
+            const totalBorder = {
+                top: { style: "medium", color: { rgb: "0F172A" } },
+                bottom: { style: "double", color: { rgb: "0F172A" } },
+                left: { style: "thin", color: { rgb: "94A3B8" } },
+                right: { style: "thin", color: { rgb: "94A3B8" } }
+            };
+
+            const totalRowIdx = (totalRow && totalRow.length > 0) ? (4 + rows.length) : -1;
+
+            for (let R = 0; R < aoa.length; R++) {
+                for (let C = 0; C < colCount; C++) {
+                    const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
+                    if (!ws[cellRef]) {
+                        ws[cellRef] = { t: 's', v: '' };
+                    }
+                    const cell = ws[cellRef];
+
+                    if (R === 0) {
+                        // 1행: 메인 타이틀 배너
+                        cell.s = {
+                            font: { name: "맑은 고딕", sz: 14, bold: true, color: { rgb: "FFFFFF" } },
+                            fill: { fgColor: { rgb: "1E3A8A" } },
+                            alignment: { horizontal: "center", vertical: "center" }
+                        };
+                    } else if (R === 1) {
+                        // 2행: 조회 조건 및 합계 요약 배너
+                        cell.s = {
+                            font: { name: "맑은 고딕", sz: 10, bold: true, color: { rgb: "1E3A8A" } },
+                            fill: { fgColor: { rgb: "DBEAFE" } },
+                            alignment: { horizontal: "left", vertical: "center" }
+                        };
+                    } else if (R === 3) {
+                        // 4행: 테이블 컬럼 헤더
+                        cell.s = {
+                            font: { name: "맑은 고딕", sz: 10.5, bold: true, color: { rgb: "FFFFFF" } },
+                            fill: { fgColor: { rgb: "1E293B" } },
+                            border: headerBorder,
+                            alignment: { horizontal: "center", vertical: "center", wrapText: true }
+                        };
+                    } else if (R >= 4 && R !== totalRowIdx) {
+                        // 일반 데이터 행
+                        const isEven = (R - 4) % 2 === 1;
+                        const statusVal = statusColIdx !== undefined ? String(aoa[R][statusColIdx] || '') : '';
+                        const isUnpaidRow = statusVal === '미결제';
+                        const isNegativeRow = numericCols.some(colIdx => Number(aoa[R][colIdx]) < 0);
+
+                        let rowBg = isEven ? "F8FAFC" : "FFFFFF";
+                        if (isUnpaidRow) rowBg = "FFFBEB";
+                        if (isNegativeRow) rowBg = "FFF1F2";
+
+                        const isNumCol = numericCols.includes(C);
+                        const isCenterCol = centerCols.includes(C);
+
+                        let fontColor = "0F172A";
+                        let isBold = false;
+                        if (isNumCol && C === numericCols[0]) {
+                            isBold = true;
+                            fontColor = Number(cell.v) < 0 ? "BE123C" : "1E3A8A";
+                        }
+                        if (C === statusColIdx && isUnpaidRow) {
+                            isBold = true;
+                            fontColor = "BE123C";
+                        }
+
+                        if (isNumCol && typeof cell.v === 'number') {
+                            cell.t = 'n';
+                            cell.z = '#,##0';
+                        }
+
+                        cell.s = {
+                            font: { name: "맑은 고딕", sz: 10, bold: isBold, color: { rgb: fontColor } },
+                            fill: { fgColor: { rgb: rowBg } },
+                            border: thinBorder,
+                            alignment: {
+                                horizontal: isNumCol ? "right" : (isCenterCol ? "center" : "left"),
+                                vertical: "center"
+                            },
+                            numFmt: isNumCol ? "#,##0" : undefined
+                        };
+                    } else if (R === totalRowIdx) {
+                        // 하단 합계 행
+                        const isNumCol = numericCols.includes(C);
+                        if (isNumCol && typeof cell.v === 'number') {
+                            cell.t = 'n';
+                            cell.z = '#,##0';
+                        }
+                        cell.s = {
+                            font: { name: "맑은 고딕", sz: 11, bold: true, color: { rgb: "0F172A" } },
+                            fill: { fgColor: { rgb: "FEF3C7" } },
+                            border: totalBorder,
+                            alignment: {
+                                horizontal: isNumCol ? "right" : "center",
+                                vertical: "center"
+                            },
+                            numFmt: isNumCol ? "#,##0" : undefined
+                        };
+                    }
+                }
+            }
+
+            return ws;
+        }
+
+        // 기능 1: 현재 보고 있는 내역 서식형 엑셀 다운로드
+        function downloadCurrentViewExcel() {
+            const exportData = getCurrentFilteredList(false);
+            if (exportData.length === 0) {
+                showToast('엑셀로 저장할 내역이 없습니다.', 'error');
+                return;
+            }
+
+            const siteLabel = currentSite === 'ALL' ? '전체현장' : currentSite;
+            const monthStr = currentMonth === 'ALL' ? '전체월' : `${currentMonth}월`;
+            const todayStr = new Date().toISOString().slice(0, 10);
+            let filenameCategory = '';
+            let ws = null;
+
+            if (currentCategory === 'BANK') {
+                filenameCategory = '통장_입출금내역';
+                let sumIn = 0, sumOut = 0, sumSup = 0, sumVat = 0;
+                const rows = exportData.map((item, idx) => {
+                    sumIn += item.inAmt || 0;
+                    sumOut += item.outAmt || 0;
+                    sumSup += item.supply || 0;
+                    sumVat += item.vat || 0;
+                    return [
+                        idx + 1,
+                        item.date,
+                        item.site,
+                        item.cat,
+                        item.partner,
+                        item.item,
+                        item.inAmt || 0,
+                        item.outAmt || 0,
+                        item.supply || 0,
+                        item.vat || 0,
+                        item.note === '1' ? '세금계산서' : (item.note || '')
+                    ];
+                });
+
+                const totalRow = [
+                    '합계',
+                    `총 ${exportData.length}건`,
+                    siteLabel,
+                    '',
+                    '',
+                    `통장 차액(입금-출금): ${formatKRW(sumIn - sumOut)}`,
+                    sumIn,
+                    sumOut,
+                    sumSup,
+                    sumVat,
+                    ''
+                ];
+
+                ws = createStyledSheet({
+                    title: `(주)일우건설 - [${siteLabel}] 통장 입출금 장부 내역 (${monthStr})`,
+                    subtitle: `조회건수: 총 ${new Intl.NumberFormat('ko-KR').format(exportData.length)}건  |  입금합계: ${formatKRW(sumIn)}  |  출금합계: ${formatKRW(sumOut)}  |  통장잔액(차액): ${formatKRW(sumIn - sumOut)}  |  저장일: ${todayStr}`,
+                    headers: ['순번', '일자', '현장명', '구분', '거래처명', '적요 / 거래내용', '입금액', '출금액', '공급가액', '부가세', '계산서/비고'],
+                    rows,
+                    totalRow,
+                    colWidths: [7, 13, 13, 8, 25, 38, 17, 17, 16, 14, 14],
+                    numericCols: [6, 7, 8, 9],
+                    centerCols: [0, 1, 2, 3, 10],
+                    statusColIdx: 10
+                });
+            } else {
+                const catName = currentCategory === 'SALES' ? '매출(세금계산서발행)' : '매입(세금계산서수취)';
+                filenameCategory = currentCategory === 'SALES' ? '매출_세금계산서' : '매입_세금계산서';
+                if (onlyUnpaid) filenameCategory += '_미결제내역';
+
+                let sumSup = 0, sumVat = 0, sumTot = 0;
+                const rows = exportData.map((item, idx) => {
+                    sumSup += item.supply || 0;
+                    sumVat += item.vat || 0;
+                    sumTot += item.total || 0;
+                    return [
+                        idx + 1,
+                        item.date,
+                        item.site,
+                        item.cat,
+                        item.bizNo || '',
+                        item.partner,
+                        item.ceo || '',
+                        item.item,
+                        item.total || 0,
+                        item.supply || 0,
+                        item.vat || 0,
+                        isUnpaidRecord(item) ? '미결제' : (item.note || '')
+                    ];
+                });
+
+                const totalRow = [
+                    '합계',
+                    `총 ${exportData.length}건`,
+                    siteLabel,
+                    '',
+                    '',
+                    '',
+                    '',
+                    '총 합계 금액',
+                    sumTot,
+                    sumSup,
+                    sumVat,
+                    onlyUnpaid ? '미결제 합계' : ''
+                ];
+
+                ws = createStyledSheet({
+                    title: `(주)일우건설 - [${siteLabel}] ${catName} 내역 (${monthStr}${onlyUnpaid ? ' · 미결제 한정' : ''})`,
+                    subtitle: `조회건수: 총 ${new Intl.NumberFormat('ko-KR').format(exportData.length)}건  |  합계금액: ${formatKRW(sumTot)}  |  공급가액: ${formatKRW(sumSup)}  |  부가세: ${formatKRW(sumVat)}  |  저장일: ${todayStr}`,
+                    headers: ['순번', '일자', '현장명', '구분', '사업자번호', '상호(거래처명)', '대표자명', '품목명 / 공종', '합계금액', '공급가액', '부가세', '결제여부'],
+                    rows,
+                    totalRow,
+                    colWidths: [7, 13, 13, 8, 15, 25, 13, 36, 18, 17, 15, 14],
+                    numericCols: [8, 9, 10],
+                    centerCols: [0, 1, 2, 3, 4, 6, 11],
+                    statusColIdx: 11
+                });
+            }
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, filenameCategory.slice(0, 31));
+
+            const siteNameStr = siteLabel.replace(/\s+/g, '_');
+            const fileName = `일우건설_${siteNameStr}_${monthStr}_${filenameCategory}.xlsx`;
+
+            XLSX.writeFile(wb, fileName);
+            showToast(`[${fileName}] 서식형 엑셀 파일이 저장되었습니다!`, 'success');
+        }
+
+        // 기능 2: 선택한 현장의 전체 시트(매출+매입+통장입출금) 서식형 통합 엑셀 다운로드
+        function downloadSiteAllSheetsExcel() {
+            let siteRecords = rawData;
+            if (currentSite !== 'ALL') {
+                siteRecords = rawData.filter(d => d.site === currentSite);
+            } else if (!isAdminUnlocked) {
+                siteRecords = rawData.filter(d => d.site !== '본사');
+            }
+            if (siteRecords.length === 0) {
+                showToast('저장할 현장 데이터가 없습니다.', 'error');
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+            const siteTitle = currentSite === 'ALL' ? '전체현장' : currentSite;
+            const todayStr = new Date().toISOString().slice(0, 10);
+
+            const salesRaw = siteRecords.filter(d => d.cat === '매출');
+            const purchRaw = siteRecords.filter(d => d.cat === '매입');
+            const bankRaw = siteRecords.filter(d => d.cat === '입금' || d.cat === '출금');
+
+            // 1) 시트1: 매출
+            let sTot = 0, sSup = 0, sVat = 0;
+            const salesRows = salesRaw.map((item, i) => {
+                sTot += item.total || 0; sSup += item.supply || 0; sVat += item.vat || 0;
+                return [
+                    i + 1, item.date, item.site, item.cat, item.bizNo || '',
+                    item.partner, item.ceo || '', item.item,
+                    item.total || 0, item.supply || 0, item.vat || 0,
+                    isUnpaidRecord(item) ? '미결제' : (item.note || '')
+                ];
+            });
+            const wsSales = createStyledSheet({
+                title: `(주)일우건설 - [${siteTitle}] 매출 (세금계산서 발행) 전체 내역`,
+                subtitle: `총 ${salesRaw.length}건  |  합계금액: ${formatKRW(sTot)}  |  공급가액: ${formatKRW(sSup)}  |  부가세: ${formatKRW(sVat)}  |  저장일: ${todayStr}`,
+                headers: ['순번', '일자', '현장명', '구분', '사업자번호', '상호(거래처명)', '대표자명', '품목명 / 공종', '합계금액', '공급가액', '부가세', '결제여부'],
+                rows: salesRows,
+                totalRow: ['합계', `총 ${salesRaw.length}건`, siteTitle, '', '', '', '', '매출 총 합계', sTot, sSup, sVat, ''],
+                colWidths: [7, 13, 13, 8, 15, 25, 13, 36, 18, 17, 15, 14],
+                numericCols: [8, 9, 10],
+                centerCols: [0, 1, 2, 3, 4, 6, 11],
+                statusColIdx: 11
+            });
+            XLSX.utils.book_append_sheet(wb, wsSales, '1_매출(세금계산서발행)');
+
+            // 2) 시트2: 매입
+            let pTot = 0, pSup = 0, pVat = 0;
+            const purchRows = purchRaw.map((item, i) => {
+                pTot += item.total || 0; pSup += item.supply || 0; pVat += item.vat || 0;
+                return [
+                    i + 1, item.date, item.site, item.cat, item.bizNo || '',
+                    item.partner, item.ceo || '', item.item,
+                    item.total || 0, item.supply || 0, item.vat || 0,
+                    isUnpaidRecord(item) ? '미결제' : (item.note || '')
+                ];
+            });
+            const wsPurch = createStyledSheet({
+                title: `(주)일우건설 - [${siteTitle}] 매입 (세금계산서 수취) 전체 내역`,
+                subtitle: `총 ${purchRaw.length}건  |  합계금액: ${formatKRW(pTot)}  |  공급가액: ${formatKRW(pSup)}  |  부가세: ${formatKRW(pVat)}  |  저장일: ${todayStr}`,
+                headers: ['순번', '일자', '현장명', '구분', '사업자번호', '상호(거래처명)', '대표자명', '품목명 / 공종', '합계금액', '공급가액', '부가세', '결제여부'],
+                rows: purchRows,
+                totalRow: ['합계', `총 ${purchRaw.length}건`, siteTitle, '', '', '', '', '매입 총 합계', pTot, pSup, pVat, ''],
+                colWidths: [7, 13, 13, 8, 15, 25, 13, 36, 18, 17, 15, 14],
+                numericCols: [8, 9, 10],
+                centerCols: [0, 1, 2, 3, 4, 6, 11],
+                statusColIdx: 11
+            });
+            XLSX.utils.book_append_sheet(wb, wsPurch, '2_매입(세금계산서수취)');
+
+            // 3) 시트3: 통장 입출금
+            let bIn = 0, bOut = 0, bSup = 0, bVat = 0;
+            const bankRows = bankRaw.map((item, i) => {
+                bIn += item.inAmt || 0; bOut += item.outAmt || 0; bSup += item.supply || 0; bVat += item.vat || 0;
+                return [
+                    i + 1, item.date, item.site, item.cat, item.partner, item.item,
+                    item.inAmt || 0, item.outAmt || 0, item.supply || 0, item.vat || 0,
+                    item.note === '1' ? '세금계산서' : (item.note || '')
+                ];
+            });
+            const wsBank = createStyledSheet({
+                title: `(주)일우건설 - [${siteTitle}] 통장 입출금 전체 내역`,
+                subtitle: `총 ${bankRaw.length}건  |  입금합계: ${formatKRW(bIn)}  |  출금합계: ${formatKRW(bOut)}  |  통장잔액(차액): ${formatKRW(bIn - bOut)}  |  저장일: ${todayStr}`,
+                headers: ['순번', '일자', '현장명', '구분', '거래처명', '적요 / 거래내용', '입금액', '출금액', '공급가액', '부가세', '계산서/비고'],
+                rows: bankRows,
+                totalRow: ['합계', `총 ${bankRaw.length}건`, siteTitle, '', '', `통장 잔액(차액): ${formatKRW(bIn - bOut)}`, bIn, bOut, bSup, bVat, ''],
+                colWidths: [7, 13, 13, 8, 25, 38, 17, 17, 16, 14, 14],
+                numericCols: [6, 7, 8, 9],
+                centerCols: [0, 1, 2, 3, 10],
+                statusColIdx: 10
+            });
+            XLSX.utils.book_append_sheet(wb, wsBank, '3_통장입출금내역');
+
+            const fileName = `일우건설_${siteTitle}_통합장부(매출_매입_통장).xlsx`;
+            XLSX.writeFile(wb, fileName);
+            showToast(`[${siteTitle}] 매출·매입·통장 3개 시트가 깔끔한 양식으로 저장되었습니다!`, 'success');
+        }
+
+        // 관리자모드 제어 및 인증 로직 (비밀번호 0519)
+        function openAdminPinModal() {
+            const modal = document.getElementById('adminPinModal');
+            const input = document.getElementById('adminPinInput');
+            if (modal && input) {
+                input.value = '';
+                modal.classList.remove('hidden');
+                setTimeout(() => input.focus(), 80);
+            }
+        }
+
+        function closeAdminPinModal() {
+            const modal = document.getElementById('adminPinModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function toggleAdminAuth() {
+            if (isAdminUnlocked) {
+                isAdminUnlocked = false;
+                updateAdminAuthUI();
+                if (currentSite === '본사') {
+                    currentSite = 'ALL';
+                }
+                populateManagerDropdown();
+                renderSiteButtons();
+                updateDisplay();
+                showToast('관리자모드가 해제되었습니다.', 'info');
+            } else {
+                openAdminPinModal();
+            }
+        }
+
+        function updateAdminAuthUI() {
+            const btn = document.getElementById('btnAdminAuth');
+            const icon = document.getElementById('adminAuthIcon');
+            const text = document.getElementById('adminAuthText');
+            if (!btn || !icon || !text) return;
+
+            if (isAdminUnlocked) {
+                btn.className = "whitespace-nowrap shrink-0 bg-emerald-800 hover:bg-emerald-700 text-emerald-100 text-xs sm:text-sm font-black px-3 py-2 rounded-xl transition flex items-center shadow border border-emerald-400";
+                icon.className = "fa-solid fa-user-check mr-1.5 text-emerald-300";
+                text.innerText = "관리자모드 (ON)";
+            } else {
+                btn.className = "whitespace-nowrap shrink-0 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-bold px-3 py-2 rounded-xl transition flex items-center shadow border border-slate-600";
+                icon.className = "fa-solid fa-user-gear mr-1.5 text-amber-400";
+                text.innerText = "관리자모드";
+            }
+        }
+
+        function verifyAdminPin() {
+            const input = document.getElementById('adminPinInput');
+            if (!input) return;
+            const entered = input.value.trim();
+            if (entered === masterPin) {
+                isAdminUnlocked = true;
+                closeAdminPinModal();
+                updateAdminAuthUI();
+                fetchGoogleSheetData(true);
+                showToast('관리자모드가 활성화되었습니다.', 'success');
+            } else {
+                showToast('비밀번호가 올바르지 않습니다.', 'error');
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        // 이벤트 리스너 초기화
+        window.addEventListener('DOMContentLoaded', () => {
+            // 초기 글씨 배율 적용
+            applyFontScale(fontScalePercent);
+
+            // 글씨 크기 작게 / 초기화 / 크게 버튼 이벤트
+            document.getElementById('btnFontDec').addEventListener('click', () => {
+                applyFontScale(fontScalePercent - 10);
+            });
+            document.getElementById('btnFontReset').addEventListener('click', () => {
+                applyFontScale(100);
+                showToast('기본 글씨 크기(100%)로 복원되었습니다.');
+            });
+            document.getElementById('btnFontInc').addEventListener('click', () => {
+                applyFontScale(fontScalePercent + 10);
+            });
+
+            // 관리자모드 버튼 및 모달 이벤트
+            document.getElementById('btnAdminAuth').addEventListener('click', toggleAdminAuth);
+            document.getElementById('btnClosePinModal').addEventListener('click', closeAdminPinModal);
+            document.getElementById('btnCancelPin').addEventListener('click', closeAdminPinModal);
+            document.getElementById('btnSubmitPin').addEventListener('click', verifyAdminPin);
+            document.getElementById('adminPinInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') verifyAdminPin();
+                if (e.key === 'Escape') closeAdminPinModal();
+            });
+
+            // 구글시트 새로고침 이벤트
+            document.getElementById('btnRefreshSheet').addEventListener('click', () => fetchGoogleSheetData(false));
+
+            // 미결제 내역만 보기 토글 버튼
+            document.getElementById('btnFilterUnpaid').addEventListener('click', () => {
+                if (currentCategory === 'BANK') {
+                    onlyUnpaid = true;
+                    switchCategory('PURCHASE');
+                    showToast('매입 세금계산서의 [미결제 내역]으로 전환되었습니다.', 'info');
+                    return;
+                }
+                onlyUnpaid = !onlyUnpaid;
+                displayLimit = 200;
+                updateDisplay();
+                if (onlyUnpaid) {
+                    showToast('결제여부가 비어있는 [미결제 내역]만 필터링되었습니다.', 'info');
+                } else {
+                    showToast('미결제 필터가 해제되어 전체 내역을 표시합니다.', 'info');
+                }
+            });
+
+            // 엑셀 다운로드 및 인쇄 미리보기 모달 이벤트
+            document.getElementById('btnDownloadCurrentExcel').addEventListener('click', downloadCurrentViewExcel);
+            document.getElementById('btnDownloadAllExcel').addEventListener('click', downloadSiteAllSheetsExcel);
+            document.getElementById('btnPrintView').addEventListener('click', openPrintPreviewModal);
+            document.getElementById('btnExecuteBrowserPrint').addEventListener('click', () => {
+                window.print();
+            });
+            document.getElementById('btnOpenPrintPopup').addEventListener('click', openPopupPrintWindow);
+            document.getElementById('btnClosePrintModal').addEventListener('click', () => {
+                document.getElementById('printPreviewModal').classList.add('hidden');
+            });
+
+            // 소장님 필터 드롭다운
+            document.getElementById('managerFilterSelect').addEventListener('change', (e) => {
+                currentManagerFilter = e.target.value;
+                if (currentManagerFilter !== 'ALL') {
+                    const firstSite = sitesData.find(s => s.manager === currentManagerFilter);
+                    if (firstSite) currentSite = firstSite.site;
+                } else {
+                    currentSite = 'ALL';
+                }
+                renderSiteButtons();
+                syncSelectedSiteBadge();
+                updateDisplay();
+            });
+
+            // 2단계 카테고리 탭 버튼
+            document.getElementById('tabSales').addEventListener('click', () => switchCategory('SALES'));
+            document.getElementById('tabPurchase').addEventListener('click', () => switchCategory('PURCHASE'));
+            document.getElementById('tabBank').addEventListener('click', () => switchCategory('BANK'));
+
+            // 요약 카드 클릭 시 해당 탭으로 전환
+            document.getElementById('cardSalesBox').addEventListener('click', () => switchCategory('SALES'));
+            document.getElementById('cardPurchaseBox').addEventListener('click', () => switchCategory('PURCHASE'));
+            document.getElementById('cardBankInOutBox').addEventListener('click', () => switchCategory('BANK'));
+            document.getElementById('cardBalanceBox').addEventListener('click', () => switchCategory('BANK'));
+
+            // 월별 선택 버튼들
+            const monthButtons = document.querySelectorAll('.month-btn');
+            monthButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentMonth = btn.getAttribute('data-month');
+                    displayLimit = 200;
+                    monthButtons.forEach(b => {
+                        b.className = 'month-btn bg-white text-slate-700 hover:bg-slate-200 font-bold text-xs sm:text-sm px-2 py-1 rounded-lg border border-slate-300';
+                    });
+                    btn.className = 'month-btn bg-blue-900 text-white font-black text-xs sm:text-sm px-2.5 py-1 rounded-lg border border-blue-900 shadow-sm';
+                    updateDisplay();
+                });
+            });
+
+            // 통장 입금/출금 세부 필터 버튼들
+            const bankTypeButtons = document.querySelectorAll('.bank-type-btn');
+            bankTypeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentBankType = btn.getAttribute('data-banktype');
+                    displayLimit = 200;
+                    bankTypeButtons.forEach(b => {
+                        b.className = 'bank-type-btn bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold text-xs px-2.5 py-1 rounded-lg';
+                    });
+                    btn.className = 'bank-type-btn bg-emerald-700 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow-sm';
+                    updateDisplay();
+                });
+            });
+
+            // 검색창 입력
+            const searchInput = document.getElementById('searchInput');
+            const btnClearSearch = document.getElementById('btnClearSearch');
+            searchInput.addEventListener('input', (e) => {
+                currentSearch = e.target.value;
+                displayLimit = 200;
+                btnClearSearch.classList.toggle('hidden', currentSearch.trim() === '');
+                updateDisplay();
+            });
+            btnClearSearch.addEventListener('click', () => {
+                currentSearch = '';
+                searchInput.value = '';
+                btnClearSearch.classList.add('hidden');
+                displayLimit = 200;
+                updateDisplay();
+            });
+
+            // 정렬 변경
+            document.getElementById('sortSelect').addEventListener('change', (e) => {
+                currentSort = e.target.value;
+                updateDisplay();
+            });
+
+            // 더 보기 버튼
+            document.getElementById('btnLoadMore').addEventListener('click', () => {
+                displayLimit += 300;
+                updateDisplay();
+            });
+
+            // 거래처별 요약 접기/펼치기
+            document.getElementById('btnTogglePartnerSummary').addEventListener('click', () => {
+                const grid = document.getElementById('partnerSummaryGrid');
+                grid.classList.toggle('hidden');
+            });
+
+            // 초기 실행: 내장된 구글 시트 URL에서 자동으로 최신 데이터 즉시 동기화
+            renderSiteButtons();
+            updateDisplay();
+            fetchGoogleSheetData(true);
+        });
+    </script>
+</body>
+</html>
