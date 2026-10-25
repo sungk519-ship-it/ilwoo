@@ -217,61 +217,94 @@
 </head>
 <body class="h-full bg-slate-100 text-slate-900 flex flex-col min-h-screen">
 
-    <!-- [시작] 소장님 전용 전체화면 로딩창 (데이터 수신 완료 시 자동 해제) -->
+   <!-- [시작] 반투명 배경 + 중앙 큼지막한 안심 팝업 로딩창 -->
     <div id="loadingOverlay" style="
+        @keyframes popupFadeIn {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
         position: fixed;
-        top: 0;
-        left: 0;
+        inset: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(255, 255, 255, 0.97);
+        background-color: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
         z-index: 99999;
         display: flex;
-        flex-direction: column;
-        justify-content: center;
         align-items: center;
-        font-family: 'Noto Sans KR', 'Pretendard', -apple-system, sans-serif;
-        text-align: center;
-        padding: 24px;
+        justify-content: center;
+        padding: 20px;
         box-sizing: border-box;
         transition: opacity 0.25s ease-out;
     ">
-        <!-- 상단 안전모 배지 & 빙글빙글 도는 스피너 애니메이션 -->
-        <div style="position: relative; width: 76px; height: 76px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center;">
-            <div style="
-                position: absolute;
-                inset: 0;
-                border: 6px solid #e2e8f0;
-                border-top: 6px solid #1d4ed8;
-                border-radius: 50%;
-                animation: ilwooSpin 0.9s linear infinite;
-            "></div>
-            <i class="fa-solid fa-helmet-safety" style="font-size: 28px; color: #1e3a8a;"></i>
-        </div>
-
-        <!-- 큰 제목 안내 문구 -->
-        <h2 style="
-            font-size: 24px;
-            font-weight: 900;
-            color: #0f172a;
-            margin: 0 0 12px 0;
-            letter-spacing: -0.02em;
-        ">(주)일우건설 현장 장부 동기화 중</h2>
-
-        <!-- 세부 설명 문구 (소장님 안심용) -->
-        <p id="loadingOverlaySubText" style="
-            font-size: 17px;
-            color: #475569;
-            line-height: 1.65;
-            margin: 0;
-            font-weight: 500;
+        <!-- 중앙 팝업 카드 (뒤 배경이 은은하게 비침) -->
+        <div style="
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 460px;
+            padding: 36px 28px 32px 28px;
+            border-radius: 28px;
+            border: 3px solid #1e3a8a;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35), 0 10px 20px -5px rgba(30, 58, 138, 0.25);
+            text-align: center;
+            font-family: 'Noto Sans KR', 'Pretendard', sans-serif;
+            box-sizing: border-box;
+            transform: translateY(0);
+            animation: popupFadeIn 0.2s ease-out;
         ">
-            구글 시트에서 <strong style="color: #1d4ed8; font-weight: 800;">최신 자금 내역</strong>을 안전하게 불러오고 있습니다.<br>
-            잠시만 기다려 주세요. <span style="color: #64748b; font-size: 15px;"></span>
-        </p>
-    </div>
-    <!-- [끝] 소장님 전용 전체화면 로딩창 -->
+            <!-- 회전 스피너 & 안전모 아이콘 -->
+            <div style="position: relative; width: 72px; height: 72px; margin: 0 auto 20px auto; display: flex; align-items: center; justify-content: center;">
+                <div style="
+                    position: absolute;
+                    inset: 0;
+                    border: 6px solid #e2e8f0;
+                    border-top: 6px solid #1d4ed8;
+                    border-radius: 50%;
+                    animation: ilwooSpin 0.9s linear infinite;
+                "></div>
+                <i class="fa-solid fa-helmet-safety" style="font-size: 28px; color: #1e3a8a;"></i>
+            </div>
 
+            <!-- 회사 배지 -->
+            <div style="margin-bottom: 8px;">
+                <span style="
+                    background-color: #f59e0b;
+                    color: #0f172a;
+                    font-size: 13px;
+                    font-weight: 900;
+                    padding: 3px 10px;
+                    border-radius: 6px;
+                    display: inline-block;
+                ">(주)일우건설</span>
+            </div>
+
+            <!-- 큰 제목 안내 문구 -->
+            <h2 style="
+                font-size: 22px;
+                font-weight: 900;
+                color: #0f172a;
+                margin: 0 0 10px 0;
+                letter-spacing: -0.02em;
+                line-height: 1.35;
+            ">최신 현장 장부 동기화 중</h2>
+
+            <!-- 세부 설명 문구 (소장님 안심용) -->
+            <p id="loadingOverlaySubText" style="
+                font-size: 16px;
+                color: #475569;
+                line-height: 1.6;
+                margin: 0;
+                font-weight: 600;
+                word-break: keep-all;
+            ">
+                구글 시트에서 <strong style="color: #1d4ed8; font-weight: 800;">실시간 자금 내역</strong>을 안전하게 불러오고 있습니다.<br>
+                <span style="color: #64748b; font-size: 14px; font-weight: 500;">잠시만 기다려 주시면 화면이 열립니다.</span>
+            </p>
+        </div>
+    </div>
+    <!-- [끝] 반투명 배경 + 중앙 큼지막한 안심 팝업 로딩창 -->
+    
     <!-- 상단 알림 토스트 -->
     <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col gap-2.5 max-w-md w-full pointer-events-none px-4 sm:px-0"></div>
 
