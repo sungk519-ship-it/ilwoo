@@ -715,15 +715,17 @@
         let isAdminUnlocked = false;      // 관리자모드 인증 상태 (기본 false)
         let adminPinSession = "";         // GitHub 소스코드에 평문 비밀번호 노출 방지 (인증 시 세션 보관)
 
-        // 평문 노출 없는 비밀번호 검증 함수
+        // 평문 노출 없는 비밀번호 검증 함수 (0519 정확히 일치 검증)
         function checkPinCode(str) {
-            if (!str || str.length !== 4) return false;
+            if (!str) return false;
+            const s = String(str).trim();
+            if (s.length !== 4) return false;
             let h = 2166136261;
-            for (let i = 0; i < str.length; i++) {
-                h ^= str.charCodeAt(i);
+            for (let i = 0; i < s.length; i++) {
+                h ^= s.charCodeAt(i);
                 h = Math.imul(h, 16777619);
             }
-            return (h >>> 0) === 1581018684;
+            return (h >>> 0) === 399516764;
         }
 
         // 토스트 알림 함수
@@ -781,10 +783,10 @@
         // 숫자 파싱 헬퍼 (₩, 콤마, 공백 등이 포함된 문자열도 안전하게 숫자로 변환)
         function parseCleanNum(val) {
             if (val === null || val === undefined || val === '') return 0;
-            if (typeof val === 'number') return isNaN(val) ? 0 : val;
+            if (typeof val === 'number') return isNaN(val) ? 0 : Math.round(val);
             const cleaned = String(val).replace(/[₩,\s원]/g, '');
             const num = Number(cleaned);
-            return isNaN(num) ? 0 : num;
+            return isNaN(num) ? 0 : Math.round(num);
         }
 
         // 현장명 정규화 헬퍼 (제니스오토텍 -> 제니스, 한현스틸 -> 한현, 빈값 -> 기타/미지정)
@@ -911,6 +913,10 @@
                     let carryIn = s.carryIn !== undefined ? parseCleanNum(s.carryIn) : undefined;
                     let carryOut = s.carryOut !== undefined ? parseCleanNum(s.carryOut) : undefined;
 
+                    // 부가세만 있고 공급가액/계약금액이 #### 등으로 0인 경우 자동 복원
+                    if (supplyAmt === 0 && vatAmt > 0) supplyAmt = vatAmt * 10;
+                    if (contractAmt === 0 && (supplyAmt > 0 || vatAmt > 0)) contractAmt = supplyAmt + vatAmt;
+
                     // 앱스크립트 재배포 전에도 대덕 현장 이월 입출금 및 계약금액이 즉시 반영되도록 안전 보정
                     if (siteKey === '대덕') {
                         if (carryIn === undefined) carryIn = 3117500000;
@@ -997,7 +1003,6 @@
 
                     fallbackBills.forEach((fb, idx) => {
                         if (fb.site === '본사' && !isAdminUnlocked) return;
-                        // 기존 매입 탭에 동일 날짜+사업자번호+공급가액으로 잘못 들어가 있던 행이 있으면 면세 계산서로 교체, 없으면 추가
                         const existingIdx = parsedRecords.findIndex(r =>
                             r.cat === '매입' && r.date === fb.date && r.bizNo === fb.bizNo && r.supply === fb.supply
                         );
@@ -1089,7 +1094,7 @@
             return map;
         }
 
-        // 1단계: 현장 선택 버튼 리스트 렌더링 (요청 1번: 어떤 모니터 배율에서도 소장님 이름이 우측 끝에 칼같이 정렬되도록 min-w-0 flex-1 & 고정 배지 적용)
+        // 1단계: 현장 선택 버튼 리스트 렌더링 (모니터 배율 무관 우측 끝 칼정렬)
         function renderSiteButtons() {
             const container = document.getElementById('siteButtonList');
             if (!container) return;
@@ -1101,6 +1106,9 @@
 
             const allSiteKeys = new Set();
             allSiteKeys.add('기타/미지정');
+            if (isAdminUnlocked) {
+                allSiteKeys.add('본사');
+            }
 
             sitesData.forEach(s => {
                 if ((countsMap[s.site] || 0) > 0 || s.contractAmt > 0 || s.site === '본사') {
@@ -1113,10 +1121,12 @@
 
             let siteList = Array.from(allSiteKeys);
 
-            // 정렬 우선순위: 1순위 '기타/미지정' (전체 현장 보기 바로 옆), 그 외에는 공사목록 등록 순서 유지
+            // 정렬 우선순위: 1순위 '기타/미지정' (전체 현장 보기 바로 옆), 2순위 '본사' (관리자모드 시), 그 외에는 공사목록 등록 순서 유지
             siteList.sort((a, b) => {
                 if (a === '기타/미지정') return -1;
                 if (b === '기타/미지정') return 1;
+                if (a === '본사') return -1;
+                if (b === '본사') return 1;
                 const idxA = sitesData.findIndex(s => s.site === a);
                 const idxB = sitesData.findIndex(s => s.site === b);
                 if (idxA !== -1 && idxB !== -1) return idxA - idxB;
@@ -1164,7 +1174,7 @@
                 }
                 const meta = siteMetaMap[siteKey] || {
                     site: siteKey,
-                    fullName: siteKey === '기타/미지정' ? '현장 미지정 내역' : siteKey,
+                    fullName: siteKey === '기타/미지정' ? '현장 미지정 내역' : (siteKey === '본사' ? '(주)일우건설 본사' : siteKey),
                     manager: '-'
                 };
                 const cnt = countsMap[siteKey] || 0;
@@ -1255,7 +1265,7 @@
             updateDisplay();
         }
 
-        // 공사 개요 배너 업데이트 (요청 3번: 이월 입금액/출금액을 포함한 누적 수금률 및 이익률 반영)
+        // 공사 개요 배너 업데이트 (이월 입금액/출금액을 포함한 누적 수금률 및 이익률 반영)
         function updateOverviewBanner(filteredBySite, salesTotal, totalInWithCarry, totalOutWithCarry, carryInTotal, carryOutTotal) {
             const meta = sitesData.find(s => s.site === currentSite);
             const bannerType = document.getElementById('bannerSiteType');
@@ -1335,7 +1345,7 @@
                 }
             }
 
-            // 요청 5번: 월별 다중(중복) 선택 필터 적용
+            // 월별 다중(중복) 선택 필터 적용
             if (selectedMonths.size > 0) {
                 list = list.filter(d => selectedMonths.has(Number(d.month)));
             }
@@ -1815,7 +1825,7 @@
         }
 
         // =========================================================================
-        // 인쇄용 HTML 생성 및 미리보기 모달 / 새 창 인쇄 (요청 2번: 결제여부 날짜 줄바꿈 완벽 해결)
+        // 인쇄용 HTML 생성 및 미리보기 모달 / 새 창 인쇄 (결제여부 날짜 줄바꿈 완벽 해결)
         // =========================================================================
         function buildPrintSheetHtml(printList) {
             const siteLabel = currentSite === 'ALL' ? '전체 현장 통합' : `${currentSite} 현장`;
@@ -1876,7 +1886,6 @@
                     </tr>
                 `;
             } else {
-                // 요청 2번 반영: 일자(9.5%)와 결제여부(10%) 폭을 넓히고 nowrap-cell 적용하여 2026-10-22가 절대 줄바꿈되지 않도록 고정
                 tableHeadersHtml = `
                     <tr>
                         <th style="width:4%;">No</th>
@@ -2445,8 +2454,11 @@
                 adminPinSession = entered;
                 closeAdminPinModal();
                 updateAdminAuthUI();
+                populateManagerDropdown();
+                renderSiteButtons();
+                updateDisplay();
                 fetchGoogleSheetData(true);
-                showToast('관리자모드가 활성화되었습니다.', 'success');
+                showToast('관리자모드가 활성화되었습니다. 본사 내역을 불러옵니다.', 'success');
             } else {
                 showToast('비밀번호가 올바르지 않습니다.', 'error');
                 input.value = '';
@@ -2539,7 +2551,7 @@
             document.getElementById('cardBankInOutBox').addEventListener('click', () => switchCategory('BANK'));
             document.getElementById('cardBalanceBox').addEventListener('click', () => switchCategory('BANK'));
 
-            // 요청 5번: 월별 다중(중복) 선택 버튼 이벤트
+            // 월별 다중(중복) 선택 버튼 이벤트
             const monthButtons = document.querySelectorAll('.month-btn');
             monthButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
