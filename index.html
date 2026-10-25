@@ -182,6 +182,12 @@
             border-top: 2px solid #0f172a;
         }
 
+        /* 전체화면 로딩창 회전 애니메이션 */
+        @keyframes ilwooSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         @media print {
             @page {
                 size: A4 landscape;
@@ -195,6 +201,7 @@
                 color: #000000 !important;
                 overflow: visible !important;
             }
+            #loadingOverlay,
             #appScreenWrapper,
             #toastContainer,
             #adminPinModal,
@@ -209,6 +216,61 @@
     </style>
 </head>
 <body class="h-full bg-slate-100 text-slate-900 flex flex-col min-h-screen">
+
+    <!-- [시작] 소장님 전용 전체화면 로딩창 (데이터 수신 완료 시 자동 해제) -->
+    <div id="loadingOverlay" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.97);
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-family: 'Noto Sans KR', 'Pretendard', -apple-system, sans-serif;
+        text-align: center;
+        padding: 24px;
+        box-sizing: border-box;
+        transition: opacity 0.25s ease-out;
+    ">
+        <!-- 상단 안전모 배지 & 빙글빙글 도는 스피너 애니메이션 -->
+        <div style="position: relative; width: 76px; height: 76px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center;">
+            <div style="
+                position: absolute;
+                inset: 0;
+                border: 6px solid #e2e8f0;
+                border-top: 6px solid #1d4ed8;
+                border-radius: 50%;
+                animation: ilwooSpin 0.9s linear infinite;
+            "></div>
+            <i class="fa-solid fa-helmet-safety" style="font-size: 28px; color: #1e3a8a;"></i>
+        </div>
+
+        <!-- 큰 제목 안내 문구 -->
+        <h2 style="
+            font-size: 24px;
+            font-weight: 900;
+            color: #0f172a;
+            margin: 0 0 12px 0;
+            letter-spacing: -0.02em;
+        ">(주)일우건설 현장 장부 동기화 중</h2>
+
+        <!-- 세부 설명 문구 (소장님 안심용) -->
+        <p id="loadingOverlaySubText" style="
+            font-size: 17px;
+            color: #475569;
+            line-height: 1.65;
+            margin: 0;
+            font-weight: 500;
+        ">
+            구글 시트에서 <strong style="color: #1d4ed8; font-weight: 800;">최신 자금 내역</strong>을 안전하게 불러오고 있습니다.<br>
+            잠시만 기다려 주세요. <span style="color: #64748b; font-size: 15px;">(약 3~4초 소요)</span>
+        </p>
+    </div>
+    <!-- [끝] 소장님 전용 전체화면 로딩창 -->
 
     <!-- 상단 알림 토스트 -->
     <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col gap-2.5 max-w-md w-full pointer-events-none px-4 sm:px-0"></div>
@@ -705,7 +767,7 @@
         let currentSite = "ALL";
         let currentManagerFilter = "ALL";
         let currentCategory = "PURCHASE"; // SALES(매출), PURCHASE(매입), BANK(통장입출금)
-        let selectedMonths = new Set();   // 요청 5번: 월별 중복 선택 (비어있으면 '전체월')
+        let selectedMonths = new Set();   // 월별 중복 선택 (비어있으면 '전체월')
         let currentBankType = "ALL";      // ALL, 입금, 출금
         let currentSearch = "";
         let currentSort = "DATE_DESC";
@@ -714,6 +776,29 @@
         let fontScalePercent = parseInt(localStorage.getItem('ILWOO_FONT_SCALE') || '100', 10);
         let isAdminUnlocked = false;      // 관리자모드 인증 상태 (기본 false)
         let adminPinSession = "";         // GitHub 소스코드에 평문 비밀번호 노출 방지 (인증 시 세션 보관)
+
+        // 소장님 전용 전체화면 로딩창 표시/숨김 제어 함수
+        function showLoading(customMessage) {
+            const overlay = document.getElementById('loadingOverlay');
+            const subText = document.getElementById('loadingOverlaySubText');
+            if (subText && customMessage) {
+                subText.innerHTML = customMessage;
+            }
+            if (overlay) {
+                overlay.style.opacity = '1';
+                overlay.style.display = 'flex';
+            }
+        }
+
+        function hideLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 220);
+            }
+        }
 
         // 평문 노출 없는 비밀번호 검증 함수 (0519 정확히 일치 검증)
         function checkPinCode(str) {
@@ -883,6 +968,7 @@
 
             if (refreshIcon) refreshIcon.classList.add('fa-spin');
             if (statusText) statusText.innerText = '시트 동기화 중...';
+            showLoading();
 
             try {
                 const fetchUrl = new URL(url);
@@ -1026,6 +1112,7 @@
                 renderSiteButtons();
                 updateDisplay();
                 isInitialLoad = false;
+                hideLoading();
 
                 const nowStr = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
                 if (badge) {
@@ -1038,6 +1125,7 @@
                 }
             } catch (err) {
                 isInitialLoad = false;
+                hideLoading();
                 if (badge) {
                     badge.className = "inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-900/80 text-rose-200 border border-rose-500/60 flex-shrink-0";
                 }
@@ -1046,6 +1134,7 @@
                 updateDisplay();
                 showToast('구글 시트 데이터를 불러오지 못했습니다. 우측 상단 [시트 새로고침]을 눌러주세요.', 'error');
             } finally {
+                hideLoading();
                 if (refreshIcon) refreshIcon.classList.remove('fa-spin');
             }
         }
