@@ -68,6 +68,30 @@
             border-color: rgba(251, 191, 36, 0.45) !important;
         }
 
+        /* 모바일 화면(<640px) 전용 현장 카드 여백 최적화 (PC UI는 전혀 건드리지 않음) */
+        @media (max-width: 639px) {
+            .site-btn {
+                padding: 0.6rem 0.65rem !important;
+                min-height: 70px !important;
+            }
+            .site-btn .site-btn-title {
+                font-size: 0.84rem !important;
+                letter-spacing: -0.03em;
+            }
+            .site-btn .site-count {
+                font-size: 0.7rem !important;
+                padding: 0.1rem 0.42rem !important;
+            }
+            .site-btn .site-sub {
+                font-size: 0.72rem !important;
+                margin-top: 0.3rem !important;
+            }
+            .site-btn .site-manager-badge {
+                font-size: 0.68rem !important;
+                padding: 0.1rem 0.35rem !important;
+            }
+        }
+
         /* 탭 선택 활성화 스타일 */
         .tab-btn {
             transition: all 0.15s ease-in-out;
@@ -99,7 +123,7 @@
         }
         .tab-btn.active-bank i, .tab-btn.active-bank .tab-sub { color: #ffffff !important; }
 
-        /* 가로 스크롤 및 글자 겹침이 절대 없는 정밀 테이블 레이아웃 */
+        /* PC 전용: 가로 스크롤 및 글자 겹침이 절대 없는 정밀 테이블 레이아웃 */
         .compact-table {
             width: 100%;
             table-layout: fixed;
@@ -304,7 +328,7 @@
         </div>
     </div>
     <!-- [끝] 반투명 배경 + 중앙 큼지막한 안심 팝업 로딩창 -->
-    
+
     <!-- 상단 알림 토스트 -->
     <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col gap-2.5 max-w-md w-full pointer-events-none px-4 sm:px-0"></div>
 
@@ -316,55 +340,55 @@
 
         <!-- Header Navigation -->
         <header class="bg-blue-950 text-white shadow-xl sticky top-0 z-40 border-b-4 border-amber-500">
-            <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3">
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2.5 sm:gap-3">
                     <!-- 좌측 타이틀 영역 -->
-                    <div class="flex items-center space-x-3 min-w-0">
-                        <div class="bg-amber-400 p-2.5 rounded-2xl text-slate-950 shadow-md flex-shrink-0">
-                            <i class="fa-solid fa-helmet-safety text-2xl"></i>
+                    <div class="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
+                        <div class="bg-amber-400 p-2 sm:p-2.5 rounded-2xl text-slate-950 shadow-md flex-shrink-0">
+                            <i class="fa-solid fa-helmet-safety text-xl sm:text-2xl"></i>
                         </div>
-                        <div class="min-w-0">
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <span class="bg-amber-400 text-slate-950 text-xs font-black px-2 py-0.5 rounded-md flex-shrink-0">(주)일우건설</span>
-                                <h1 class="text-lg sm:text-xl xl:text-2xl font-black tracking-tight text-white truncate">현장 자금 · 세금계산서 간편조회</h1>
-                                <span id="syncStatusBadge" class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-600 flex-shrink-0">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                <span class="bg-amber-400 text-slate-950 text-[11px] sm:text-xs font-black px-2 py-0.5 rounded-md flex-shrink-0">(주)일우건설</span>
+                                <h1 class="text-base sm:text-xl xl:text-2xl font-black tracking-tight text-white truncate">현장 자금 · 세금계산서 간편조회</h1>
+                                <span id="syncStatusBadge" class="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold px-2 sm:px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-600 flex-shrink-0">
                                     <i class="fa-solid fa-circle text-[8px] text-amber-400"></i>
                                     <span id="syncStatusText">구글시트 동기화 중...</span>
                                 </span>
                             </div>
-                            <p class="text-xs sm:text-sm text-blue-200 mt-0.5 font-medium truncate">현장소장님 전용 원클릭 통합 관리 시스템 (구글 시트 실시간 연동)</p>
+                            <p class="text-[11px] sm:text-sm text-blue-200 mt-0.5 font-medium truncate">현장소장님 전용 원클릭 통합 관리 시스템 (구글 시트 실시간 연동)</p>
                         </div>
                     </div>
 
-                    <!-- 우측 간편 도구 버튼들 (한 줄로 반듯하게 고정 정렬) -->
-                    <div class="flex items-center gap-1.5 sm:gap-2 flex-nowrap shrink-0 overflow-x-auto sm:overflow-visible pb-0.5 sm:pb-0">
+                    <!-- 우측 간편 도구 버튼들 (PC: 한 줄 고정 정렬 유지 / 모바일: 잘림 없이 2줄 균등 배치) -->
+                    <div class="grid grid-cols-2 sm:flex sm:items-center gap-1.5 sm:gap-2 w-full sm:w-auto sm:flex-nowrap shrink-0">
                         <!-- 구글시트 새로고침 버튼 -->
-                        <button id="btnRefreshSheet" type="button" class="whitespace-nowrap shrink-0 bg-blue-700 hover:bg-blue-600 text-white text-xs sm:text-sm font-black px-3 py-2 rounded-xl transition flex items-center shadow border border-blue-400" title="구글 시트의 최신 데이터를 즉시 다시 불러옵니다">
+                        <button id="btnRefreshSheet" type="button" class="whitespace-nowrap shrink-0 justify-center bg-blue-700 hover:bg-blue-600 text-white text-xs sm:text-sm font-black px-2.5 sm:px-3 py-2 rounded-xl transition flex items-center shadow border border-blue-400" title="구글 시트의 최신 데이터를 즉시 다시 불러옵니다">
                             <i id="refreshIcon" class="fa-solid fa-arrows-rotate mr-1.5"></i>
                             <span>시트 새로고침</span>
                         </button>
 
                         <!-- 전체 엑셀저장 버튼 -->
-                        <button id="btnDownloadAllExcel" type="button" class="whitespace-nowrap shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-black px-3 py-2 rounded-xl transition flex items-center shadow border border-emerald-400" title="매출·매입·통장 전체 시트를 서식형 엑셀로 저장합니다">
+                        <button id="btnDownloadAllExcel" type="button" class="whitespace-nowrap shrink-0 justify-center bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-black px-2.5 sm:px-3 py-2 rounded-xl transition flex items-center shadow border border-emerald-400" title="매출·매입·통장 전체 시트를 서식형 엑셀로 저장합니다">
                             <i class="fa-solid fa-file-excel mr-1.5"></i>
                             <span>전체 엑셀저장</span>
                         </button>
 
                         <!-- 글씨 크기 자유 조절 컨트롤러 (작게 / 현재배율 / 크게) -->
-                        <div class="inline-flex items-center shrink-0 bg-amber-400 text-slate-950 rounded-xl shadow border-2 border-amber-300 overflow-hidden">
-                            <button id="btnFontDec" type="button" class="whitespace-nowrap hover:bg-amber-300 active:bg-amber-500 px-2.5 py-1.5 font-black text-xs sm:text-sm transition flex items-center" title="글씨 작게">
-                                <i class="fa-solid fa-minus mr-1 text-[10px]"></i>작게
+                        <div class="inline-flex items-center justify-between sm:justify-start shrink-0 bg-amber-400 text-slate-950 rounded-xl shadow border-2 border-amber-300 overflow-hidden">
+                            <button id="btnFontDec" type="button" class="whitespace-nowrap flex-1 sm:flex-initial justify-center hover:bg-amber-300 active:bg-amber-500 px-2 sm:px-2.5 py-1.5 font-black text-xs sm:text-sm transition flex items-center" title="글씨 작게">
+                                <i class="fa-solid fa-minus mr-0.5 sm:mr-1 text-[10px]"></i>작게
                             </button>
-                            <button id="btnFontReset" type="button" class="whitespace-nowrap bg-amber-100 hover:bg-white text-slate-900 px-2 py-1.5 font-black text-xs border-x border-amber-300 num-font min-w-[48px] text-center" title="클릭 시 100% 기본 크기로 초기화">
+                            <button id="btnFontReset" type="button" class="whitespace-nowrap bg-amber-100 hover:bg-white text-slate-900 px-1.5 sm:px-2 py-1.5 font-black text-xs border-x border-amber-300 num-font min-w-[42px] sm:min-w-[48px] text-center" title="클릭 시 100% 기본 크기로 초기화">
                                 100%
                             </button>
-                            <button id="btnFontInc" type="button" class="whitespace-nowrap hover:bg-amber-300 active:bg-amber-500 px-2.5 py-1.5 font-black text-xs sm:text-sm transition flex items-center" title="글씨 크게">
-                                크게<i class="fa-solid fa-plus ml-1 text-[10px]"></i>
+                            <button id="btnFontInc" type="button" class="whitespace-nowrap flex-1 sm:flex-initial justify-center hover:bg-amber-300 active:bg-amber-500 px-2 sm:px-2.5 py-1.5 font-black text-xs sm:text-sm transition flex items-center" title="글씨 크게">
+                                크게<i class="fa-solid fa-plus ml-0.5 sm:ml-1 text-[10px]"></i>
                             </button>
                         </div>
 
                         <!-- 관리자모드 버튼 -->
-                        <button id="btnAdminAuth" type="button" class="whitespace-nowrap shrink-0 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-bold px-3 py-2 rounded-xl transition flex items-center shadow border border-slate-600">
+                        <button id="btnAdminAuth" type="button" class="whitespace-nowrap shrink-0 justify-center bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-bold px-2.5 sm:px-3 py-2 rounded-xl transition flex items-center shadow border border-slate-600">
                             <i id="adminAuthIcon" class="fa-solid fa-user-gear mr-1.5 text-amber-400"></i>
                             <span id="adminAuthText">관리자모드</span>
                         </button>
@@ -377,7 +401,7 @@
         <main class="flex-1 max-w-7xl w-full mx-auto px-2.5 sm:px-5 lg:px-6 py-4 sm:py-5 space-y-5">
 
             <!-- 1. 현장 선택 섹션 -->
-            <section class="bg-white p-4 sm:p-5 rounded-2xl shadow-md border-2 border-slate-200">
+            <section class="bg-white p-3.5 sm:p-5 rounded-2xl shadow-md border-2 border-slate-200">
                 <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-3.5 pb-3 border-b-2 border-slate-100">
                     <div>
                         <h2 class="text-lg sm:text-xl font-black text-slate-900 flex items-center">
@@ -389,11 +413,13 @@
                         </p>
                     </div>
 
-                    <!-- 소장님별 보기 필터 -->
-                    <div class="flex flex-wrap items-center gap-2">
-                        <div class="flex items-center bg-slate-100 p-1.5 rounded-xl border border-slate-300">
-                            <span class="text-xs sm:text-sm font-bold text-slate-600 px-2 py-0.5"><i class="fa-solid fa-user-tie mr-1 text-blue-700"></i>소장님별 보기:</span>
-                            <select id="managerFilterSelect" class="bg-white text-slate-900 font-bold text-xs sm:text-sm px-2.5 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    <!-- 소장님별 보기 필터 (모바일에서 세로 줄바꿈 절대 방지) -->
+                    <div class="flex items-center w-full sm:w-auto">
+                        <div class="flex items-center w-full sm:w-auto bg-slate-100 p-1.5 rounded-xl border border-slate-300 gap-1.5">
+                            <span class="whitespace-nowrap shrink-0 text-xs sm:text-sm font-bold text-slate-600 px-2 py-0.5">
+                                <i class="fa-solid fa-user-tie mr-1 text-blue-700"></i>소장님별 보기:
+                            </span>
+                            <select id="managerFilterSelect" class="flex-1 sm:flex-initial min-w-0 bg-white text-slate-900 font-bold text-xs sm:text-sm px-2.5 py-1.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600">
                                 <option value="ALL">전체 소장님 (전체 현장)</option>
                             </select>
                         </div>
@@ -401,7 +427,7 @@
                 </div>
 
                 <!-- 현장 선택 버튼 그리드 (전체 현장 보기 바로 옆에 기타/미지정 배치, 소장님 성함 우측 끝 고정 정렬) -->
-                <div id="siteButtonList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
+                <div id="siteButtonList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-2.5">
                     <!-- JS에서 동적 생성 -->
                 </div>
             </section>
@@ -548,10 +574,10 @@
             <!-- 4. 상세 내역 테이블, 미결제 필터, 엑셀 저장 및 시트형 인쇄 -->
             <section class="bg-white rounded-2xl shadow-md border-2 border-slate-200 overflow-hidden">
                 <!-- 상단 타이틀 & 미결제 필터 / 엑셀 저장 / 인쇄 버튼 바 -->
-                <div class="p-4 sm:p-5 border-b-2 border-slate-200 bg-slate-50 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                <div class="p-3.5 sm:p-5 border-b-2 border-slate-200 bg-slate-50 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                     <div class="min-w-0">
                         <div class="flex items-center gap-2 flex-wrap">
-                            <h3 id="tableTitle" class="text-lg sm:text-xl font-black text-slate-900 flex items-center">
+                            <h3 id="tableTitle" class="text-base sm:text-xl font-black text-slate-900 flex items-center">
                                 <i class="fa-solid fa-table text-blue-600 mr-2"></i> 상세 거래 내역
                             </h3>
                             <span id="tableCountBadge" class="bg-blue-900 text-white text-xs sm:text-sm font-black px-3 py-1 rounded-full shrink-0">총 0건</span>
@@ -561,23 +587,23 @@
                         </p>
                     </div>
 
-                    <!-- 미결제 필터 + 현재 내역 엑셀저장 + 인쇄하기 3개 버튼 한 줄 정렬 -->
-                    <div class="flex items-center gap-2 flex-nowrap shrink-0 overflow-x-auto sm:overflow-visible pb-0.5 sm:pb-0">
+                    <!-- PC: 3개 버튼 한 줄 정렬 그대로 유지 / 모바일: 인쇄하기 버튼이 절대 잘리지 않게 화면 폭에 꽉 차도록 배치 -->
+                    <div class="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto sm:flex-nowrap shrink-0">
                         <!-- 미결제 내역만 필터링하는 원클릭 토글 버튼 -->
-                        <button id="btnFilterUnpaid" type="button" class="whitespace-nowrap shrink-0 bg-white hover:bg-rose-50 text-rose-700 text-xs sm:text-sm font-black px-3.5 py-2.5 rounded-xl transition flex items-center shadow-sm border-2 border-rose-400">
+                        <button id="btnFilterUnpaid" type="button" class="col-span-2 sm:col-span-1 justify-center whitespace-nowrap shrink-0 bg-white hover:bg-rose-50 text-rose-700 text-xs sm:text-sm font-black px-3.5 py-2.5 rounded-xl transition flex items-center shadow-sm border-2 border-rose-400">
                             <i class="fa-solid fa-circle-exclamation text-rose-600 mr-1.5"></i>
                             <span id="unpaidBtnText">미결제만 보기</span>
                             <span id="unpaidCountBadge" class="ml-1.5 bg-rose-100 text-rose-800 text-xs font-black px-2 py-0.5 rounded-full num-font">0건</span>
                         </button>
 
                         <!-- 현재 내역 엑셀저장 -->
-                        <button id="btnDownloadCurrentExcel" type="button" class="whitespace-nowrap shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-black px-3.5 py-2.5 rounded-xl transition flex items-center shadow-md border-2 border-emerald-500">
+                        <button id="btnDownloadCurrentExcel" type="button" class="justify-center whitespace-nowrap shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-black px-3 sm:px-3.5 py-2.5 rounded-xl transition flex items-center shadow-md border-2 border-emerald-500">
                             <i class="fa-solid fa-file-excel text-base mr-1.5"></i>
                             <span>현재 내역 엑셀저장</span>
                         </button>
 
                         <!-- 인쇄하기 -->
-                        <button id="btnPrintView" type="button" class="whitespace-nowrap shrink-0 bg-slate-700 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold px-3.5 py-2.5 rounded-xl transition flex items-center shadow-sm border-2 border-slate-700">
+                        <button id="btnPrintView" type="button" class="justify-center whitespace-nowrap shrink-0 bg-slate-700 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold px-3 sm:px-3.5 py-2.5 rounded-xl transition flex items-center shadow-sm border-2 border-slate-700">
                             <i class="fa-solid fa-print text-base mr-1.5"></i>
                             <span>인쇄하기</span>
                         </button>
@@ -585,7 +611,7 @@
                 </div>
 
                 <!-- 월별(중복 선택 가능)/검색/구분 필터 바 -->
-                <div class="p-3.5 sm:p-4 bg-slate-100/80 border-b-2 border-slate-200 space-y-2.5">
+                <div class="p-3 sm:p-4 bg-slate-100/80 border-b-2 border-slate-200 space-y-2.5">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-2.5">
                         <!-- 월별 다중(중복) 선택 버튼 -->
                         <div class="flex items-center gap-1 flex-wrap" id="monthFilterButtons">
@@ -608,7 +634,7 @@
                         </div>
 
                         <!-- 통장 탭 전용: 입금/출금 세부 필터 -->
-                        <div id="bankSubFilterBox" class="hidden flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-300">
+                        <div id="bankSubFilterBox" class="hidden flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-300 flex-wrap">
                             <span class="text-xs font-black text-slate-600 px-2">입출금 구분:</span>
                             <button type="button" data-banktype="ALL" class="bank-type-btn bg-emerald-700 text-white font-black text-xs px-2.5 py-1 rounded-lg">입출금 전체</button>
                             <button type="button" data-banktype="입금" class="bank-type-btn bg-slate-100 text-emerald-800 hover:bg-emerald-50 font-bold text-xs px-2.5 py-1 rounded-lg">입금만 보기</button>
@@ -619,17 +645,17 @@
                     <!-- 거래처 / 품목 검색창 및 정렬 -->
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-0.5">
                         <div class="relative flex-1 max-w-xl">
-                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
-                            <input type="text" id="searchInput" placeholder="거래처 이름이나 품목명(예: 레미콘, 철근, 노무비, 신성건축)을 입력하세요..." 
-                                class="w-full pl-10 pr-20 py-2 bg-white border-2 border-slate-300 rounded-xl text-sm sm:text-base font-bold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm sm:text-base"></i>
+                            <input type="text" id="searchInput" placeholder="거래처명 또는 품목명(예: 레미콘, 철근, 노무비) 검색..." 
+                                class="w-full pl-9 sm:pl-10 pr-16 sm:pr-20 py-2 bg-white border-2 border-slate-300 rounded-xl text-xs sm:text-base font-bold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600">
                             <button id="btnClearSearch" type="button" class="hidden absolute right-2 top-1/2 -translate-y-1/2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold px-2 py-1 rounded-lg">
                                 지우기
                             </button>
                         </div>
 
-                        <div class="flex items-center gap-2 self-end sm:self-auto">
+                        <div class="flex items-center justify-between sm:justify-end gap-2">
                             <label for="sortSelect" class="text-xs sm:text-sm font-bold text-slate-600 whitespace-nowrap">정렬 순서:</label>
-                            <select id="sortSelect" class="bg-white border-2 border-slate-300 rounded-xl px-2.5 py-1.5 text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-600">
+                            <select id="sortSelect" class="flex-1 sm:flex-initial bg-white border-2 border-slate-300 rounded-xl px-2.5 py-1.5 text-xs sm:text-sm font-bold text-slate-800 focus:outline-none focus:border-blue-600">
                                 <option value="DATE_DESC">최신 날짜순 (최근 → 과거)</option>
                                 <option value="DATE_ASC">과거 날짜순 (1월 → 12월)</option>
                                 <option value="AMT_DESC">금액 큰 순서대로</option>
@@ -641,7 +667,7 @@
                 </div>
 
                 <!-- 현재 조회된 목록 상단 합계 요약 바 (합계금액 -> 공급가액 -> 부가세 순) -->
-                <div id="currentTableSummaryBar" class="px-4 py-3 bg-blue-50/90 border-b-2 border-blue-200 flex flex-wrap items-center justify-between gap-2">
+                <div id="currentTableSummaryBar" class="px-3.5 sm:px-4 py-3 bg-blue-50/90 border-b-2 border-blue-200 flex flex-wrap items-center justify-between gap-2">
                     <div class="flex items-center gap-2 flex-wrap">
                         <span class="bg-blue-700 text-white text-xs font-black px-2.5 py-1 rounded-md">현재 조회 합계</span>
                         <span id="barCountText" class="text-sm sm:text-base font-black text-slate-800">총 0 건</span>
@@ -650,13 +676,13 @@
                             <i class="fa-solid fa-filter mr-1"></i>미결제 내역만 표시 중
                         </span>
                     </div>
-                    <div id="barAmountsContainer" class="flex flex-wrap items-center gap-3 sm:gap-5 text-sm sm:text-base font-black num-font">
+                    <div id="barAmountsContainer" class="flex flex-wrap items-center gap-2 sm:gap-5 text-xs sm:text-base font-black num-font">
                         <!-- JS에서 합계금액 -> 공급가액 -> 부가세 순으로 동적 표시 -->
                     </div>
                 </div>
 
-                <!-- 테이블 영역 -->
-                <div class="w-full overflow-x-hidden custom-scrollbar max-h-[680px] overflow-y-auto">
+                <!-- [PC 전용 테이블 영역] sm(640px) 이상에서는 기존 PC 9열 테이블을 100% 그대로 표시 -->
+                <div class="hidden sm:block w-full overflow-x-hidden custom-scrollbar max-h-[680px] overflow-y-auto">
                     <table class="compact-table text-left">
                         <thead id="dataTableHead" class="text-slate-800 bg-slate-200 border-b-2 border-slate-300 font-black sticky top-0 z-10 shadow-sm">
                             <!-- JS에서 카테고리에 맞게 동적 헤더 렌더링 -->
@@ -665,6 +691,11 @@
                             <!-- Dynamic Content -->
                         </tbody>
                     </table>
+                </div>
+
+                <!-- [모바일 전용 카드형 장부 영역] 스마트폰(<640px)에서는 글자 잘림 없이 한눈에 읽히는 카드 리스트로 표시 -->
+                <div id="mobileDataCardList" class="block sm:hidden divide-y divide-slate-200 bg-slate-100 p-2.5 space-y-2.5 max-h-[720px] overflow-y-auto custom-scrollbar">
+                    <!-- JS에서 모바일 맞춤형 카드 동적 렌더링 -->
                 </div>
 
                 <!-- 더 보기 버튼 -->
@@ -676,9 +707,9 @@
                 </div>
 
                 <!-- Footer Summary Banner -->
-                <div class="p-3.5 sm:p-4 bg-slate-800 text-white border-t-2 border-slate-900 flex flex-col sm:flex-row justify-between items-center gap-2 text-sm sm:text-base font-black">
+                <div class="p-3.5 sm:p-4 bg-slate-800 text-white border-t-2 border-slate-900 flex flex-col sm:flex-row justify-between items-center gap-1.5 sm:gap-2 text-xs sm:text-base font-black text-center sm:text-left">
                     <span id="dataCountText" class="text-amber-300">조회 내역: 총 0 건</span>
-                    <span id="dataSumText" class="text-base sm:text-xl text-white num-font">합계 금액: 0 원</span>
+                    <span id="dataSumText" class="text-sm sm:text-xl text-white num-font">합계 금액: 0 원</span>
                 </div>
             </section>
 
@@ -727,20 +758,20 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" id="btnExecuteBrowserPrint" class="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm sm:text-base px-4 py-2 rounded-xl shadow flex items-center gap-1.5 transition">
+                    <button type="button" id="btnExecuteBrowserPrint" class="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-base px-3 sm:px-4 py-2 rounded-xl shadow flex items-center gap-1.5 transition">
                         <i class="fa-solid fa-print"></i> 프린터로 인쇄 (PDF 저장)
                     </button>
-                    <button type="button" id="btnOpenPrintPopup" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow flex items-center gap-1.5 transition" title="새 창으로 인쇄 화면을 띄웁니다">
+                    <button type="button" id="btnOpenPrintPopup" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm px-3 sm:px-3.5 py-2 rounded-xl shadow flex items-center gap-1.5 transition" title="새 창으로 인쇄 화면을 띄웁니다">
                         <i class="fa-solid fa-up-right-from-square"></i> 새 창에서 인쇄
                     </button>
-                    <button type="button" id="btnClosePrintModal" class="bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs sm:text-sm px-3.5 py-2 rounded-xl transition flex items-center gap-1">
+                    <button type="button" id="btnClosePrintModal" class="bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs sm:text-sm px-3 sm:px-3.5 py-2 rounded-xl transition flex items-center gap-1">
                         <i class="fa-solid fa-xmark"></i> 닫기
                     </button>
                 </div>
             </div>
             <!-- 모달 내부 장부 표 미리보기 영역 -->
-            <div class="flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-200 custom-scrollbar">
-                <div id="printModalContentBox" class="bg-white max-w-5xl mx-auto p-6 sm:p-8 shadow-xl rounded-lg border border-slate-300 text-slate-900">
+            <div class="flex-1 overflow-y-auto p-3 sm:p-8 bg-slate-200 custom-scrollbar">
+                <div id="printModalContentBox" class="bg-white max-w-5xl mx-auto p-4 sm:p-8 shadow-xl rounded-lg border border-slate-300 text-slate-900 overflow-x-auto">
                     <!-- JS에서 시트형 인쇄 표 HTML 주입 -->
                 </div>
             </div>
@@ -1149,7 +1180,7 @@
 
                 const nowStr = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
                 if (badge) {
-                    badge.className = "inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-900/80 text-emerald-200 border border-emerald-500/60 flex-shrink-0";
+                    badge.className = "inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold px-2 sm:px-2.5 py-0.5 rounded-full bg-emerald-900/80 text-emerald-200 border border-emerald-500/60 flex-shrink-0";
                 }
                 if (statusText) statusText.innerText = `실시간 연동됨 (${nowStr})`;
 
@@ -1160,7 +1191,7 @@
                 isInitialLoad = false;
                 hideLoading();
                 if (badge) {
-                    badge.className = "inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-900/80 text-rose-200 border border-rose-500/60 flex-shrink-0";
+                    badge.className = "inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold px-2 sm:px-2.5 py-0.5 rounded-full bg-rose-900/80 text-rose-200 border border-rose-500/60 flex-shrink-0";
                 }
                 if (statusText) statusText.innerText = '연동 확인 필요';
                 renderSiteButtons();
@@ -1276,11 +1307,11 @@
                         : 'bg-amber-50/70 text-slate-900 border-amber-300 hover:bg-amber-100'
                 }`;
                 allBtn.innerHTML = `
-                    <div class="flex items-center justify-between w-full gap-1.5 min-w-0">
-                        <span class="site-btn-title text-sm sm:text-base font-black truncate min-w-0 flex-1">🏢 전체 현장 보기</span>
+                    <div class="flex items-center justify-between w-full gap-1 min-w-0">
+                        <span class="site-btn-title text-sm sm:text-base font-black truncate min-w-0 flex-1"><span class="hidden sm:inline">🏢 </span>전체 현장 보기</span>
                         <span class="site-count text-xs font-black px-2 py-0.5 rounded-full bg-amber-200 text-slate-900 shrink-0">${new Intl.NumberFormat('ko-KR').format(countsMap.ALL || 0)}건</span>
                     </div>
-                    <div class="site-sub flex items-center justify-between w-full min-w-0 text-xs font-bold text-slate-600 mt-1.5 gap-1.5">
+                    <div class="site-sub flex items-center justify-between w-full min-w-0 text-xs font-bold text-slate-600 mt-1.5 gap-1">
                         <span class="min-w-0 flex-1 truncate">일우건설 전 현장 통합</span>
                         <span class="site-manager-badge shrink-0 whitespace-nowrap text-right text-[11px] font-extrabold px-1.5 py-0.5 rounded bg-amber-200/80 text-slate-900 border border-amber-300">전체통합</span>
                     </div>
@@ -1317,11 +1348,11 @@
                 const iconStr = siteKey === '본사' ? '🏛️' : (siteKey === '기타/미지정' ? '📂' : '🏗️');
 
                 btn.innerHTML = `
-                    <div class="flex items-center justify-between w-full gap-1.5 min-w-0">
-                        <span class="site-btn-title text-sm sm:text-base font-black truncate min-w-0 flex-1" title="${siteKey}">${iconStr} ${siteKey}</span>
+                    <div class="flex items-center justify-between w-full gap-1 min-w-0">
+                        <span class="site-btn-title text-sm sm:text-base font-black truncate min-w-0 flex-1" title="${siteKey}"><span class="hidden sm:inline">${iconStr} </span>${siteKey}</span>
                         <span class="site-count text-xs font-extrabold px-2 py-0.5 rounded-full bg-slate-200 text-slate-800 shrink-0">${new Intl.NumberFormat('ko-KR').format(cnt)}건</span>
                     </div>
-                    <div class="site-sub flex items-center justify-between w-full min-w-0 text-xs font-bold text-slate-500 mt-1.5 gap-1.5">
+                    <div class="site-sub flex items-center justify-between w-full min-w-0 text-xs font-bold text-slate-500 mt-1.5 gap-1">
                         <span class="min-w-0 flex-1 truncate" title="${meta.fullName || siteKey}">${meta.fullName || siteKey}</span>
                         <span class="site-manager-badge shrink-0 whitespace-nowrap text-right text-[11px] font-extrabold px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200">${managerBadge}</span>
                     </div>
@@ -1509,7 +1540,7 @@
             return sorted;
         }
 
-        // 미결제 필터 버튼 UI 상태 업데이트
+        // 미결제 필터 버튼 UI 상태 업데이트 (모바일 col-span-2 유지 + PC 1줄 정렬 유지)
         function updateUnpaidFilterButtonUI(unpaidCount) {
             const btn = document.getElementById('btnFilterUnpaid');
             const textEl = document.getElementById('unpaidBtnText');
@@ -1520,7 +1551,7 @@
             badgeEl.innerText = `${new Intl.NumberFormat('ko-KR').format(unpaidCount)}건`;
 
             if (currentCategory === 'BANK') {
-                btn.className = "whitespace-nowrap shrink-0 bg-white hover:bg-rose-50 text-rose-700 text-xs sm:text-sm font-black px-3.5 py-2.5 rounded-xl transition flex items-center shadow-sm border-2 border-rose-300";
+                btn.className = "col-span-2 sm:col-span-1 justify-center whitespace-nowrap shrink-0 bg-white hover:bg-rose-50 text-rose-700 text-xs sm:text-sm font-black px-3.5 py-2.5 rounded-xl transition flex items-center shadow-sm border-2 border-rose-300";
                 textEl.innerText = "매입 미결제 보기";
                 badgeEl.className = "ml-1.5 bg-rose-100 text-rose-800 text-xs font-black px-2 py-0.5 rounded-full num-font";
                 if (activeTag) activeTag.classList.add('hidden');
@@ -1528,12 +1559,12 @@
             }
 
             if (onlyUnpaid) {
-                btn.className = "whitespace-nowrap shrink-0 bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-black px-3.5 py-2.5 rounded-xl transition flex items-center shadow-md border-2 border-rose-700 ring-2 ring-rose-200";
+                btn.className = "col-span-2 sm:col-span-1 justify-center whitespace-nowrap shrink-0 bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-black px-3.5 py-2.5 rounded-xl transition flex items-center shadow-md border-2 border-rose-700 ring-2 ring-rose-200";
                 textEl.innerText = "미결제 필터 해제";
                 badgeEl.className = "ml-1.5 bg-white text-rose-700 text-xs font-black px-2 py-0.5 rounded-full num-font";
                 if (activeTag) activeTag.classList.remove('hidden');
             } else {
-                btn.className = "whitespace-nowrap shrink-0 bg-white hover:bg-rose-50 text-rose-700 text-xs sm:text-sm font-black px-3.5 py-2.5 rounded-xl transition flex items-center shadow-sm border-2 border-rose-400";
+                btn.className = "col-span-2 sm:col-span-1 justify-center whitespace-nowrap shrink-0 bg-white hover:bg-rose-50 text-rose-700 text-xs sm:text-sm font-black px-3.5 py-2.5 rounded-xl transition flex items-center shadow-sm border-2 border-rose-400";
                 textEl.innerText = "미결제만 보기";
                 badgeEl.className = "ml-1.5 bg-rose-100 text-rose-800 text-xs font-black px-2 py-0.5 rounded-full num-font";
                 if (activeTag) activeTag.classList.add('hidden');
@@ -1698,7 +1729,7 @@
             // 주요 거래처별 집계 렌더링
             renderPartnerSummary(categoryData);
 
-            // 상세 테이블 렌더링
+            // 상세 테이블(PC) 및 카드 리스트(모바일) 렌더링
             renderTable(categoryData);
         }
 
@@ -1774,16 +1805,18 @@
             });
         }
 
-        // 상세 테이블 출력
+        // 상세 내역 출력 (PC: 기존 9열 테이블 100% 유지 / 모바일: 글자 잘림 없는 전용 장부 카드 렌더링)
         function renderTable(dataList) {
             const thead = document.getElementById('dataTableHead');
             const tbody = document.getElementById('dataTableBody');
+            const mobileCardList = document.getElementById('mobileDataCardList');
             const loadMoreContainer = document.getElementById('loadMoreContainer');
             const loadMoreBtnText = document.getElementById('loadMoreBtnText');
             const barCountText = document.getElementById('barCountText');
             const barAmountsContainer = document.getElementById('barAmountsContainer');
 
             tbody.innerHTML = '';
+            if (mobileCardList) mobileCardList.innerHTML = '';
 
             if (currentCategory === 'BANK') {
                 thead.innerHTML = `
@@ -1852,10 +1885,18 @@
                         </td>
                     </tr>
                 `;
+                if (mobileCardList) {
+                    mobileCardList.innerHTML = `
+                        <div class="bg-white rounded-xl p-8 text-center text-slate-600 font-black text-sm">
+                            ${emptyMsg}
+                        </div>
+                    `;
+                }
                 loadMoreContainer.classList.add('hidden');
             } else {
                 const sliced = dataList.slice(0, displayLimit);
-                const fragment = document.createDocumentFragment();
+                const pcFragment = document.createDocumentFragment();
+                const mobileFragment = document.createDocumentFragment();
 
                 sliced.forEach(item => {
                     const tr = document.createElement('tr');
@@ -1870,12 +1911,16 @@
 
                     if (currentCategory === 'BANK') {
                         let bankNoteHtml = '<span class="text-xs text-slate-400">-</span>';
+                        let mobileBankNoteHtml = '';
                         if (item.note === '1') {
                             bankNoteHtml = '<span class="inline-block bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-black px-2 py-0.5 rounded">세금계산서</span>';
+                            mobileBankNoteHtml = '<span class="inline-block bg-emerald-100 text-emerald-800 border border-emerald-300 text-[11px] font-black px-2 py-0.5 rounded">세금계산서</span>';
                         } else if (item.note) {
                             bankNoteHtml = `<span class="inline-block bg-slate-100 text-slate-700 border border-slate-300 text-xs font-bold px-2 py-0.5 rounded whitespace-nowrap">${item.note}</span>`;
+                            mobileBankNoteHtml = `<span class="inline-block bg-slate-100 text-slate-700 border border-slate-300 text-[11px] font-bold px-2 py-0.5 rounded whitespace-nowrap">${item.note}</span>`;
                         }
 
+                        // 1) PC 행 렌더링 (절대 변경 없음)
                         tr.innerHTML = `
                             <td class="text-center text-slate-900 font-bold num-font whitespace-nowrap">${item.date}</td>
                             <td class="text-center text-slate-800 font-extrabold truncate" title="${item.site}">${item.site}</td>
@@ -1889,6 +1934,33 @@
                             <td class="num-cell text-right text-slate-600 num-font" title="${item.supply > 0 ? formatKRW(item.supply) : ''}">${item.supply > 0 ? formatKRW(item.supply) : '-'}</td>
                             <td class="text-center px-1">${bankNoteHtml}</td>
                         `;
+
+                        // 2) 모바일 전용 카드 렌더링
+                        if (mobileCardList) {
+                            const mCard = document.createElement('div');
+                            const isIn = item.inAmt > 0;
+                            mCard.className = `bg-white rounded-xl p-3.5 shadow-sm border-2 ${isIn ? 'border-emerald-200' : 'border-slate-200'} space-y-2`;
+                            mCard.innerHTML = `
+                                <div class="flex items-center justify-between gap-1.5 flex-wrap">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="text-xs font-black text-slate-700 num-font bg-slate-100 px-2 py-0.5 rounded border border-slate-200">${item.date}</span>
+                                        <span class="text-xs font-black text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">${item.site}</span>
+                                        <span class="${badgeColor} text-[11px] px-2 py-0.5 rounded-full font-black">${item.cat}</span>
+                                    </div>
+                                    <div>${mobileBankNoteHtml}</div>
+                                </div>
+                                <div class="pt-0.5">
+                                    <div class="text-sm font-black text-slate-900 leading-snug">${item.partner || '-'}</div>
+                                    <div class="text-xs font-bold text-slate-700 mt-1 leading-relaxed break-words">${item.item || '-'}</div>
+                                </div>
+                                <div class="bg-slate-50 rounded-lg p-2.5 border border-slate-200 flex items-center justify-between">
+                                    <span class="text-xs font-extrabold ${isIn ? 'text-emerald-800' : 'text-rose-800'}">${isIn ? '통장 입금액' : '통장 출금액'}</span>
+                                    <span class="text-base font-black num-font ${isIn ? 'text-emerald-700' : 'text-rose-700'}">${formatKRW(isIn ? item.inAmt : item.outAmt)}</span>
+                                </div>
+                                ${item.supply > 0 ? `<div class="text-[11px] text-slate-500 font-bold text-right num-font">공급가액: ${formatKRW(item.supply)}</div>` : ''}
+                            `;
+                            mobileFragment.appendChild(mCard);
+                        }
                     } else {
                         const payBadgeHtml = unpaid
                             ? `<span class="inline-block bg-rose-100 text-rose-700 border border-rose-300 text-xs font-black px-2 py-0.5 rounded whitespace-nowrap">미결제</span>`
@@ -1906,6 +1978,7 @@
                             ? `<div class="text-xs text-slate-500 font-medium leading-tight mt-0.5 truncate" title="${item.ceo ? `대표: ${item.ceo}` : ''} ${item.bizNo ? `(${item.bizNo})` : ''}">${item.ceo ? `대표: ${item.ceo}` : ''} ${item.bizNo ? `(${item.bizNo})` : ''}</div>`
                             : '';
 
+                        // 1) PC 행 렌더링 (절대 변경 없음)
                         tr.innerHTML = `
                             <td class="text-center text-slate-900 font-bold num-font whitespace-nowrap">${item.date}</td>
                             <td class="text-center text-slate-800 font-extrabold truncate" title="${item.site}">${item.site}</td>
@@ -1922,11 +1995,54 @@
                             <td class="num-cell text-right text-slate-600 font-semibold num-font" title="${formatKRW(item.vat)}">${formatKRW(item.vat)}</td>
                             <td class="text-center px-1">${payBadgeHtml}</td>
                         `;
+
+                        // 2) 모바일 전용 카드 렌더링 (일자·현장·상호·품목·합계·공급가·부가세·결제여부 100% 전체 노출)
+                        if (mobileCardList) {
+                            const mCard = document.createElement('div');
+                            mCard.className = `bg-white rounded-xl p-3.5 shadow-sm border-2 ${unpaid ? 'border-rose-300 bg-amber-50/20' : 'border-slate-200'} space-y-2`;
+                            const mobilePayBadge = unpaid
+                                ? `<span class="inline-flex items-center bg-rose-100 text-rose-700 border border-rose-300 text-xs font-black px-2.5 py-0.5 rounded-full">미결제</span>`
+                                : `<span class="inline-flex items-center text-xs font-bold text-slate-800 num-font bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-300">결제: ${item.note}</span>`;
+                            const mobileCeoText = (item.ceo || item.bizNo)
+                                ? `<span class="text-xs text-slate-500 font-medium ml-1">${item.ceo ? `(대표: ${item.ceo})` : ''}</span>`
+                                : '';
+
+                            mCard.innerHTML = `
+                                <div class="flex items-center justify-between gap-1.5 flex-wrap">
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="text-xs font-black text-slate-800 num-font bg-slate-100 px-2 py-0.5 rounded border border-slate-200">${item.date}</span>
+                                        <span class="text-xs font-black text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">${item.site}</span>
+                                        <span class="${badgeColor} text-[11px] px-2 py-0.5 rounded-full font-black">${item.cat}</span>
+                                    </div>
+                                    <div>${mobilePayBadge}</div>
+                                </div>
+                                <div class="pt-0.5">
+                                    <div class="text-sm font-black text-slate-900 leading-snug break-words">
+                                        ${item.partner || '-'}${mobileCeoText}
+                                    </div>
+                                    <div class="text-xs font-bold text-slate-700 mt-1 leading-relaxed break-words">
+                                        ${paperBadge}${item.item || '-'}
+                                    </div>
+                                </div>
+                                <div class="bg-slate-50 rounded-xl p-2.5 border border-slate-200 space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-extrabold text-slate-700">합계금액</span>
+                                        <span class="text-base font-black num-font ${isNegative ? 'text-rose-700' : 'text-blue-900'}">${formatKRW(item.total)}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-[11px] font-bold text-slate-600 num-font pt-1 border-t border-slate-200/80">
+                                        <span>공급가액: ${formatKRW(item.supply)}</span>
+                                        <span>부가세: ${formatKRW(item.vat)}</span>
+                                    </div>
+                                </div>
+                            `;
+                            mobileFragment.appendChild(mCard);
+                        }
                     }
-                    fragment.appendChild(tr);
+                    pcFragment.appendChild(tr);
                 });
 
-                tbody.appendChild(fragment);
+                tbody.appendChild(pcFragment);
+                if (mobileCardList) mobileCardList.appendChild(mobileFragment);
 
                 if (dataList.length > displayLimit) {
                     loadMoreContainer.classList.remove('hidden');
@@ -2557,11 +2673,11 @@
             if (!btn || !icon || !text) return;
 
             if (isAdminUnlocked) {
-                btn.className = "whitespace-nowrap shrink-0 bg-emerald-800 hover:bg-emerald-700 text-emerald-100 text-xs sm:text-sm font-black px-3 py-2 rounded-xl transition flex items-center shadow border border-emerald-400";
+                btn.className = "whitespace-nowrap shrink-0 justify-center bg-emerald-800 hover:bg-emerald-700 text-emerald-100 text-xs sm:text-sm font-black px-2.5 sm:px-3 py-2 rounded-xl transition flex items-center shadow border border-emerald-400";
                 icon.className = "fa-solid fa-user-check mr-1.5 text-emerald-300";
                 text.innerText = "관리자모드 (ON)";
             } else {
-                btn.className = "whitespace-nowrap shrink-0 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-bold px-3 py-2 rounded-xl transition flex items-center shadow border border-slate-600";
+                btn.className = "whitespace-nowrap shrink-0 justify-center bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-bold px-2.5 sm:px-3 py-2 rounded-xl transition flex items-center shadow border border-slate-600";
                 icon.className = "fa-solid fa-user-gear mr-1.5 text-amber-400";
                 text.innerText = "관리자모드";
             }
