@@ -241,60 +241,73 @@
 </head>
 <body class="h-full bg-slate-100 text-slate-900 flex flex-col min-h-screen">
 
-    <!-- [시작] 소장님 전용 전체화면 로딩창 (데이터 수신 완료 시 자동 해제) -->
+    <!-- [시작] 소장님 전용 팝업형 로딩창 (데이터 수신 완료 시 자동 해제) -->
     <div id="loadingOverlay" style="
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(255, 255, 255, 0.97);
+        background-color: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(2px);
         z-index: 99999;
         display: flex;
-        flex-direction: column;
         justify-content: center;
         align-items: center;
         font-family: 'Noto Sans KR', 'Pretendard', -apple-system, sans-serif;
         text-align: center;
-        padding: 24px;
+        padding: 20px;
         box-sizing: border-box;
-        transition: opacity 0.25s ease-out;
+        transition: opacity 0.22s ease-out;
     ">
-        <!-- 상단 안전모 배지 & 빙글빙글 도는 스피너 애니메이션 -->
-        <div style="position: relative; width: 76px; height: 76px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center;">
-            <div style="
-                position: absolute;
-                inset: 0;
-                border: 6px solid #e2e8f0;
-                border-top: 6px solid #1d4ed8;
-                border-radius: 50%;
-                animation: ilwooSpin 0.9s linear infinite;
-            "></div>
-            <i class="fa-solid fa-helmet-safety" style="font-size: 28px; color: #1e3a8a;"></i>
-        </div>
-
-        <!-- 큰 제목 안내 문구 -->
-        <h2 style="
-            font-size: 22px;
-            font-weight: 900;
-            color: #0f172a;
-            margin: 0 0 12px 0;
-            letter-spacing: -0.02em;
-        ">(주)일우건설 현장 장부 동기화 중</h2>
-
-        <!-- 세부 설명 문구 (소장님 안심용) -->
-        <p id="loadingOverlaySubText" style="
-            font-size: 16px;
-            color: #475569;
-            line-height: 1.65;
-            margin: 0;
-            font-weight: 500;
+        <div style="
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 380px;
+            border-radius: 20px;
+            padding: 28px 24px;
+            box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.35);
+            border: 2px solid #cbd5e1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         ">
-            구글 시트에서 <strong style="color: #1d4ed8; font-weight: 800;">최신 자금 내역</strong>을 안전하게 불러오고 있습니다.<br>
-            잠시만 기다려 주세요. <span style="color: #64748b; font-size: 14px;">(약 3~4초 소요)</span>
-        </p>
+            <!-- 상단 안전모 배지 & 빙글빙글 도는 스피너 애니메이션 -->
+            <div style="position: relative; width: 64px; height: 64px; margin-bottom: 18px; display: flex; align-items: center; justify-content: center;">
+                <div style="
+                    position: absolute;
+                    inset: 0;
+                    border: 5px solid #e2e8f0;
+                    border-top: 5px solid #1d4ed8;
+                    border-radius: 50%;
+                    animation: ilwooSpin 0.9s linear infinite;
+                "></div>
+                <i class="fa-solid fa-helmet-safety" style="font-size: 24px; color: #1e3a8a;"></i>
+            </div>
+
+            <!-- 큰 제목 안내 문구 -->
+            <h2 style="
+                font-size: 19px;
+                font-weight: 900;
+                color: #0f172a;
+                margin: 0 0 10px 0;
+                letter-spacing: -0.02em;
+            ">(주)일우건설 현장 장부 동기화 중</h2>
+
+            <!-- 세부 설명 문구 -->
+            <p id="loadingOverlaySubText" style="
+                font-size: 14.5px;
+                color: #475569;
+                line-height: 1.6;
+                margin: 0;
+                font-weight: 600;
+            ">
+                구글 시트에서 <strong style="color: #1d4ed8; font-weight: 800;">최신 자금 내역</strong>을 안전하게 불러오고 있습니다.<br>
+                잠시만 기다려 주세요.
+            </p>
+        </div>
     </div>
-    <!-- [끝] 소장님 전용 전체화면 로딩창 -->
+    <!-- [끝] 소장님 전용 팝업형 로딩창 -->
 
     <!-- 상단 알림 토스트 -->
     <div id="toastContainer" class="fixed top-20 right-4 z-50 flex flex-col gap-2.5 max-w-md w-full pointer-events-none px-4 sm:px-0"></div>
@@ -367,18 +380,18 @@
         <!-- Main Container -->
         <main class="flex-1 max-w-7xl w-full mx-auto px-2.5 sm:px-5 lg:px-6 py-4 sm:py-5 space-y-5">
 
-            <!-- 0. 준공예정 현장 알림 섹션 (준공일 D-Day 30일 이내 현장 자동 표시) -->
+            <!-- 0. 집중관리기간 현장 알림 섹션 (준공 전 30일 ~ 준공 후 30일 이내 현장 자동 표시) -->
             <section id="upcomingCompletionSection" class="bg-gradient-to-r from-amber-50 via-orange-50/70 to-white p-3.5 sm:p-4 rounded-2xl shadow-md border-2 border-amber-300">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-amber-200">
                     <div class="flex items-center gap-2 flex-wrap">
                         <span class="bg-amber-500 text-white w-7 h-7 rounded-full inline-flex items-center justify-center text-sm shadow font-black">
                             <i class="fa-solid fa-bell"></i>
                         </span>
-                        <h2 class="text-base sm:text-lg font-black text-slate-900">준공예정 현장 (준공일 D-30 이내)</h2>
+                        <h2 class="text-base sm:text-lg font-black text-slate-900">집중관리기간 현장 (준공 전·후 30일)</h2>
                         <span id="upcomingSitesBadge" class="bg-rose-600 text-white text-xs font-black px-2.5 py-0.5 rounded-full num-font">0개 현장</span>
                     </div>
                     <p class="text-xs text-slate-600 font-bold">
-                        준공일이 30일 이내로 남은 현장입니다. 카드를 누르시면 해당 현장 장부로 즉시 이동합니다.
+                        준공 전 30일 ~ 준공 후 30일 이내 집중관리 현장입니다. 카드를 누르시면 해당 현장 장부로 즉시 이동합니다.
                     </p>
                 </div>
                 <div id="upcomingSitesList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 mt-3">
@@ -1101,20 +1114,21 @@
             return Math.round((end - today) / (1000 * 60 * 60 * 24));
         }
 
-        // 결제여부/비고 값 정규화
+        // 결제여부/비고 값 정규화 (날짜면 YYYY-MM-DD로 변환하고, '전도금', '부분결제', '수정', '자동이체' 등 일반 텍스트는 그대로 보존)
         function normalizeNoteValue(val) {
             if (val === undefined || val === null) return '';
             const s = String(val).trim();
             if (!s || s === '-') return '';
-            return normalizeDateValue(s);
+            const asDate = normalizeDateValue(s);
+            return asDate || s;
         }
 
-        // 미결제 내역 판별 함수 (매출/매입 세금계산서·계산서 중 결제여부 칸이 비어있는 항목)
+        // 미결제 내역 판별 함수 (매출/매입 세금계산서·계산서 중 결제여부 칸이 비어있는 항목만 미결제로 처리)
         function isUnpaidRecord(item) {
             if (!item) return false;
             if (item.cat !== '매출' && item.cat !== '매입') return false;
             const noteStr = item.note !== undefined && item.note !== null ? String(item.note).trim() : '';
-            return noteStr === '' || noteStr === '-';
+            return noteStr === '' || noteStr === '-' || noteStr === '미결제';
         }
 
         // 현재 선택된 월 표시 문자열 헬퍼 (중복 선택 대응)
@@ -1384,7 +1398,7 @@
             }
         }
 
-        // 0단계: 준공예정 현장 (준공일 D-Day 30일 이내 현장 디데이와 함께 표시)
+        // 0단계: 집중관리기간 현장 (준공 전 30일 ~ 준공 후 30일 이내 현장 디데이와 함께 표시)
         function renderUpcomingCompletionSites() {
             const listEl = document.getElementById('upcomingSitesList');
             const badgeEl = document.getElementById('upcomingSitesBadge');
@@ -1395,11 +1409,12 @@
                 if (!s.endDate || s.site === '본사') return;
                 if (currentManagerFilter !== 'ALL' && s.manager !== currentManagerFilter) return;
                 const diffDays = getDiffDaysFromToday(s.endDate);
-                if (diffDays !== null && diffDays >= 0 && diffDays <= 30) {
+                if (diffDays !== null && diffDays >= -30 && diffDays <= 30) {
                     upcoming.push({ ...s, diffDays });
                 }
             });
 
+            // 정렬: 준공일 순 (준공 후 정산 현장 및 준공 임박 현장)
             upcoming.sort((a, b) => a.diffDays - b.diffDays);
             badgeEl.innerText = `${upcoming.length}개 현장`;
 
@@ -1407,7 +1422,7 @@
                 listEl.innerHTML = `
                     <div class="col-span-full bg-white/80 rounded-xl px-4 py-3 border border-amber-200 text-xs sm:text-sm font-bold text-slate-600 flex items-center gap-2">
                         <i class="fa-solid fa-circle-check text-emerald-600"></i>
-                        <span>현재 기준 준공일 30일 이내(D-30) 도래 현장이 없습니다.</span>
+                        <span>현재 기준 집중관리기간(준공 전·후 30일 이내) 해당 현장이 없습니다.</span>
                     </div>
                 `;
                 return;
@@ -1416,10 +1431,20 @@
             listEl.innerHTML = '';
             upcoming.forEach(item => {
                 const isSelected = currentSite === item.site;
-                const dDayLabel = item.diffDays === 0 ? 'D-Day (오늘 준공)' : `D-${item.diffDays}일`;
-                const urgencyClass = item.diffDays <= 7
-                    ? 'bg-rose-600 text-white border-rose-700 animate-pulse'
-                    : 'bg-rose-100 text-rose-800 border-rose-300';
+                let dDayLabel = '';
+                let urgencyClass = '';
+                if (item.diffDays === 0) {
+                    dDayLabel = 'D-Day (오늘 준공)';
+                    urgencyClass = 'bg-rose-600 text-white border-rose-700 animate-pulse';
+                } else if (item.diffDays > 0) {
+                    dDayLabel = `준공 D-${item.diffDays}일`;
+                    urgencyClass = item.diffDays <= 7
+                        ? 'bg-rose-600 text-white border-rose-700 animate-pulse'
+                        : 'bg-rose-100 text-rose-800 border-rose-300';
+                } else {
+                    dDayLabel = `준공 후 +${Math.abs(item.diffDays)}일`;
+                    urgencyClass = 'bg-amber-100 text-amber-900 border-amber-300';
+                }
 
                 const card = document.createElement('button');
                 card.type = 'button';
