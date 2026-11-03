@@ -878,8 +878,9 @@
             { id: 21, type: "원도급", site: "신영아산물탱크", fullName: "(주)신영 아산공장 물탱크 옥상이설 구조보강공사 및 기타공사", address: "충청남도 아산시 신창면 궁화리 184-2외3필지", manager: "김성호", contractAmt: 70400000, supplyAmt: 64000000, vatAmt: 6400000, startDate: "2026-10-21", endDate: "2026-11-30", carryIn: 0, carryOut: 0 }
         ];
 
-        // 2026 일우건설 공사목록(하도급) 기본 데이터
+        // 2026 일우건설 공사목록(하도급) 27개 계약 기본 데이터 (최신 엑셀 시트 완벽 반영: 신영아산 11건, 신영울산 5건, 내서능암 2건, 산동 4건, 제니스 5건)
         const FALLBACK_SUBCONTRACTS_DATA = [
+            // 1. 신영아산 (11건)
             { id: 1, type: "하도급", site: "신영아산", fullName: "", workType: "철골", partner: "아이에스중공업(철골)", bizNo: "515-81-47146", contractAmt: 711700000, supplyAmt: 647000000, vatAmt: 64700000, startDate: "", endDate: "2026-10-31", carryIn: 0, carryOut: 0 },
             { id: 2, type: "하도급", site: "신영아산", fullName: "", workType: "철골도장", partner: "아이에스중공업(도장)", bizNo: "515-81-47146", contractAmt: 112750000, supplyAmt: 102500000, vatAmt: 10250000, startDate: "", endDate: "2026-10-31", carryIn: 0, carryOut: 0 },
             { id: 3, type: "하도급", site: "신영아산", fullName: "", workType: "철골자재납품", partner: "아이에스산업", bizNo: "515-81-52843", contractAmt: 1437700000, supplyAmt: 1307000000, vatAmt: 130700000, startDate: "", endDate: "2026-10-31", carryIn: 0, carryOut: 0 },
@@ -890,7 +891,59 @@
             { id: 8, type: "하도급", site: "신영아산", fullName: "", workType: "가시설", partner: "㈜태평건설", bizNo: "409-86-42220", contractAmt: 48400000, supplyAmt: 44000000, vatAmt: 4400000, startDate: "", endDate: "2026-10-31", carryIn: 0, carryOut: 0 },
             { id: 9, type: "하도급", site: "신영아산", fullName: "", workType: "도장공사", partner: "창유건설", bizNo: "515-81-52315", contractAmt: 53900000, supplyAmt: 49000000, vatAmt: 4900000, startDate: "", endDate: "2026-10-31", carryIn: 0, carryOut: 0 },
             { id: 10, type: "하도급", site: "신영아산", fullName: "", workType: "오수처리시설", partner: "대한엔지니어링㈜", bizNo: "312-81-73064", contractAmt: 83600000, supplyAmt: 76000000, vatAmt: 7600000, startDate: "", endDate: "2026-10-31", carryIn: 0, carryOut: 0 },
-            { id: 11, type: "하도급", site: "신영아산", fullName: "", workType: "금속창호", partner: "동해건설", bizNo: "337-81-00463", contractAmt: 97625000, supplyAmt: 88750000, vatAmt: 8875000, startDate: "", endDate: "2026-10-31", carryIn: 0, carryOut: 0 }
+            { id: 11, type: "하도급", site: "신영아산", fullName: "", workType: "금속창호", partner: "동해건설", bizNo: "337-81-00463", contractAmt: 97625000, supplyAmt: 88750000, vatAmt: 8875000, startDate: "", endDate: "2026-10-31", carryIn: 0, carryOut: 0 },
+            // 2. 신영울산 (5건 - 매입 세금계산서 발행 매칭 전, 매입발행 0원 / 미발행 = 총계약금)
+            { id: 12, type: "하도급", site: "신영울산", fullName: "", workType: "철골공사", partner: "㈜아이에스중공업", bizNo: "515-81-47146", contractAmt: 871750000, supplyAmt: 792500000, vatAmt: 79250000, startDate: "", endDate: "2026-12-20", carryIn: 0, carryOut: 0 },
+            { id: 13, type: "하도급", site: "신영울산", fullName: "", workType: "철골자재납품", partner: "아이에스스틸", bizNo: "245-87-02432", contractAmt: 990000000, supplyAmt: 900000000, vatAmt: 90000000, startDate: "", endDate: "2026-12-31", carryIn: 0, carryOut: 0 },
+            { id: 14, type: "하도급", site: "신영울산", fullName: "", workType: "철거공사", partner: "우진공영", bizNo: "514-81-71056", contractAmt: 107800000, supplyAmt: 98000000, vatAmt: 9800000, startDate: "", endDate: "2026-11-30", carryIn: 0, carryOut: 0 },
+            { id: 15, type: "하도급", site: "신영울산", fullName: "", workType: "기계설비", partner: "성한이엔지", bizNo: "504-81-77335", contractAmt: 83050000, supplyAmt: 75500000, vatAmt: 7550000, startDate: "", endDate: "2027-01-31", carryIn: 0, carryOut: 0 },
+            { id: 16, type: "하도급", site: "신영울산", fullName: "", workType: "전기공사", partner: "신화전공", bizNo: "504-81-84137", contractAmt: 210100000, supplyAmt: 191000000, vatAmt: 19100000, startDate: "", endDate: "2027-01-31", carryIn: 0, carryOut: 0 },
+            // 3. 내서능암 (2건)
+            { id: 17, type: "하도급", site: "내서능암", fullName: "", workType: "토공사", partner: "동진개발", bizNo: "831-87-00308", contractAmt: 401000000, supplyAmt: 364545455, vatAmt: 36454545, startDate: "", endDate: "2028-04-07", carryIn: 0, carryOut: 0 },
+            { id: 18, type: "하도급", site: "내서능암", fullName: "", workType: "상하수도설비", partner: "동진개발", bizNo: "831-87-00308", contractAmt: 1000000000, supplyAmt: 909090909, vatAmt: 90909091, startDate: "", endDate: "2028-04-07", carryIn: 0, carryOut: 0 },
+            // 4. 산동 (4건 - 동보석건 석공사는 매입발행 매칭 내역 없음 -> 0원 인식)
+            { id: 19, type: "하도급", site: "산동", fullName: "", workType: "철콘", partner: "건영개발", bizNo: "513-81-88670", contractAmt: 862840000, supplyAmt: 784400000, vatAmt: 78440000, startDate: "", endDate: "2026-12-19", carryIn: 0, carryOut: 0 },
+            { id: 20, type: "하도급", site: "산동", fullName: "", workType: "금속창호", partner: "상산건설", bizNo: "504-81-32416", contractAmt: 242000000, supplyAmt: 220000000, vatAmt: 22000000, startDate: "", endDate: "2026-12-19", carryIn: 0, carryOut: 0 },
+            { id: 21, type: "하도급", site: "산동", fullName: "", workType: "수장공사", partner: "우암테크", bizNo: "484-88-00977", contractAmt: 102300000, supplyAmt: 93000000, vatAmt: 9300000, startDate: "", endDate: "2026-12-19", carryIn: 0, carryOut: 0 },
+            { id: 22, type: "하도급", site: "산동", fullName: "", workType: "석공사", partner: "동보석건", bizNo: "513-81-37093", contractAmt: 23650000, supplyAmt: 21500000, vatAmt: 2150000, startDate: "", endDate: "2026-12-19", carryIn: 0, carryOut: 0 },
+            // 5. 제니스 (5건 - 매입 세금계산서 발행 매칭 전, 매입발행 0원 / 미발행 = 총계약금)
+            { id: 23, type: "하도급", site: "제니스", fullName: "", workType: "철골", partner: "㈜아이에스중공업", bizNo: "515-81-47146", contractAmt: 85800000, supplyAmt: 78000000, vatAmt: 7800000, startDate: "", endDate: "2026-10-30", carryIn: 0, carryOut: 0 },
+            { id: 24, type: "하도급", site: "제니스", fullName: "", workType: "철거공사", partner: "㈜우진공영", bizNo: "514-81-71056", contractAmt: 18150000, supplyAmt: 16500000, vatAmt: 1650000, startDate: "", endDate: "2026-11-10", carryIn: 0, carryOut: 0 },
+            { id: 25, type: "하도급", site: "제니스", fullName: "", workType: "전기공사", partner: "신화전공", bizNo: "504-81-84137", contractAmt: 33275000, supplyAmt: 30250000, vatAmt: 3025000, startDate: "", endDate: "2026-11-30", carryIn: 0, carryOut: 0 },
+            { id: 26, type: "하도급", site: "제니스", fullName: "", workType: "기계설비", partner: "성한이엔지", bizNo: "504-81-77335", contractAmt: 18700000, supplyAmt: 17000000, vatAmt: 1700000, startDate: "", endDate: "2026-11-30", carryIn: 0, carryOut: 0 },
+            { id: 27, type: "하도급", site: "제니스", fullName: "", workType: "복합판넬공사", partner: "대진산업건설", bizNo: "514-81-79761", contractAmt: 55275000, supplyAmt: 50250000, vatAmt: 5025000, startDate: "", endDate: "2026-11-30", carryIn: 0, carryOut: 0 }
+        ];
+
+        // 매입 시트 M열(하도급_공종)에 기재된 28건 기본 매칭 정보 (구버전 Code.gs 사용 시에도 100% 정확히 매칭되도록 보정)
+        const FALLBACK_SUBWORKTYPE_MATCHES = [
+            { site: "신영아산", date: "2026-03-20", bizNo: "504-81-84137", total: 88000000, subWorkType: "전기" },
+            { site: "산동", date: "2026-04-20", bizNo: "513-81-88670", total: 217179000, subWorkType: "철콘" },
+            { site: "신영아산", date: "2026-04-30", bizNo: "514-81-77609", total: 342100000, subWorkType: "파일" },
+            { site: "신영아산", date: "2026-06-25", bizNo: "515-81-47146", total: 330000000, subWorkType: "철골" },
+            { site: "신영아산", date: "2026-06-25", bizNo: "515-81-52843", total: 330000000, subWorkType: "철골자재납품" },
+            { site: "신영아산", date: "2026-06-30", bizNo: "504-81-84137", total: 275000000, subWorkType: "전기" },
+            { site: "신영아산", date: "2026-06-30", bizNo: "515-81-52843", total: 880000000, subWorkType: "철골자재납품" },
+            { site: "신영아산", date: "2026-06-30", bizNo: "515-81-47146", total: 220000000, subWorkType: "철골" },
+            { site: "신영아산", date: "2026-07-31", bizNo: "215-87-59730", total: 158400000, subWorkType: "바닥" },
+            { site: "신영아산", date: "2026-08-31", bizNo: "409-86-42220", total: 48400000, subWorkType: "가시설" },
+            { site: "신영아산", date: "2026-08-31", bizNo: "215-87-59730", total: 29150000, subWorkType: "바닥" },
+            { site: "신영아산", date: "2026-09-01", bizNo: "504-81-77335", total: 77000000, subWorkType: "기계설비" },
+            { site: "신영아산", date: "2026-09-15", bizNo: "504-81-84137", total: 110000000, subWorkType: "전기" },
+            { site: "신영아산", date: "2026-09-18", bizNo: "312-81-73064", total: 50160000, subWorkType: "오수처리시설" },
+            { site: "산동", date: "2026-09-30", bizNo: "513-81-88670", total: 188050950, subWorkType: "철콘" },
+            { site: "신영아산", date: "2026-09-30", bizNo: "515-81-47146", total: 112750000, subWorkType: "철골도장" },
+            { site: "신영아산", date: "2026-09-30", bizNo: "515-81-47146", total: 161700000, subWorkType: "철골" },
+            { site: "신영아산", date: "2026-09-30", bizNo: "515-81-47146", total: -253550000, subWorkType: "철골" },
+            { site: "신영아산", date: "2026-09-30", bizNo: "515-81-47146", total: 253550000, subWorkType: "철골" },
+            { site: "신영아산", date: "2026-09-30", bizNo: "515-81-52843", total: 227700000, subWorkType: "철골자재납품" },
+            { site: "신영아산", date: "2026-09-30", bizNo: "515-81-52315", total: 53900000, subWorkType: "도장공사" },
+            { site: "산동", date: "2026-10-12", bizNo: "504-81-32416", total: 104700000, subWorkType: "금속창호" },
+            { site: "산동", date: "2026-10-12", bizNo: "484-88-00977", total: 39250000, subWorkType: "수장공사" },
+            { site: "신영아산", date: "2026-10-16", bizNo: "337-81-00463", total: 55000000, subWorkType: "금속창호" },
+            { site: "신영아산", date: "2026-10-16", bizNo: "504-81-84137", total: 312125000, subWorkType: "전기" },
+            { site: "신영아산", date: "2026-10-20", bizNo: "312-81-73064", total: 33440000, subWorkType: "오수처리시설" },
+            { site: "내서능암", date: "2026-10-22", bizNo: "831-87-00308", total: 136586000, subWorkType: "토공사" },
+            { site: "내서능암", date: "2026-10-22", bizNo: "831-87-00308", total: 437031000, subWorkType: "상하수도설비" }
         ];
 
         // 2026 일우건설 계산서(면세) 28건 기본 데이터
@@ -1260,38 +1313,96 @@
                     sitesData = Object.values(parsedSitesMap).sort((a, b) => (a.id || 999) - (b.id || 999));
                 }
 
-                // 2) 공사목록(하도급) 파싱 (열 밀림 데이터는 자동 거부하고 정확한 하도급 내역으로 보정)
-                const candidateSubs = (Array.isArray(payload.subcontracts) ? payload.subcontracts : []).map((sc, idx) => ({
-                    id: sc.id || (idx + 1),
-                    type: String(sc.type || '하도급'),
-                    site: normalizeSiteKey(sc.site),
-                    fullName: String(sc.fullName || ''),
-                    workType: String(sc.workType || '').trim(),
-                    partner: String(sc.partner || '-').trim(),
-                    bizNo: String(sc.bizNo || '').trim(),
-                    contractAmt: parseCleanNum(sc.contractAmt),
-                    supplyAmt: parseCleanNum(sc.supplyAmt),
-                    vatAmt: parseCleanNum(sc.vatAmt),
-                    startDate: normalizeDateValue(sc.startDate),
-                    endDate: normalizeDateValue(sc.endDate),
-                    carryIn: parseCleanNum(sc.carryIn),
-                    carryOut: parseCleanNum(sc.carryOut)
-                })).filter(sc =>
-                    sc.site &&
-                    sc.site !== '하도급' &&
-                    sc.site !== '원도급' &&
-                    sc.site !== '기타/미지정' &&
-                    sc.workType !== sc.site &&
-                    sc.partner &&
-                    sc.contractAmt > 0 &&
-                    sc.contractAmt >= sc.supplyAmt
-                );
+                // 2) 공사목록(하도급) 파싱 ('도급 종류' 열 삭제에 따른 열 이동 자동 복원 및 27개 하도급 계약 전체 보장)
+                const rawIncomingSubs = Array.isArray(payload.subcontracts) ? payload.subcontracts : [];
+                const parsedSubsList = [];
 
-                if (candidateSubs.length > 0) {
-                    subcontractsData = candidateSubs;
-                } else {
-                    subcontractsData = FALLBACK_SUBCONTRACTS_DATA.map(sc => ({ ...sc }));
-                }
+                rawIncomingSubs.forEach((sc, idx) => {
+                    // 구버전 Code.gs가 새 시트(B열=현장요약어, C열=사업자번호, D열=업체명, E열=공사명, F열=공종, G열=계약금액...)를 읽었을 때 자동 복원
+                    const shiftedSite = normalizeSiteKey(sc.type);
+                    const normalSite = normalizeSiteKey(sc.site);
+
+                    if ((normalSite === '기타/미지정' || /^\d{3}-\d{2}-\d{5}$/.test(String(sc.site || '').trim())) && shiftedSite && shiftedSite !== '기타/미지정' && shiftedSite !== '하도급' && shiftedSite !== '원도급') {
+                        const recPartner = String(sc.fullName || '').trim();
+                        const recWorkType = String(sc.partner || '').trim();
+                        const recContractAmt = parseCleanNum(sc.bizNo);
+                        const recSupplyAmt = parseCleanNum(sc.contractAmt);
+                        const recVatAmt = parseCleanNum(sc.supplyAmt);
+                        const recEndDate = normalizeDateValue(sc.startDate);
+                        // FALLBACK_SUBCONTRACTS_DATA에서 동일 현장+업체+공종 사업자번호 매칭
+                        const fbMatch = FALLBACK_SUBCONTRACTS_DATA.find(f =>
+                            f.site === shiftedSite && (f.workType === recWorkType || f.partner === recPartner)
+                        );
+                        if (recPartner && recContractAmt > 0) {
+                            parsedSubsList.push({
+                                id: sc.id || (idx + 1),
+                                type: '하도급',
+                                site: shiftedSite,
+                                fullName: String(sc.workType || ''),
+                                workType: recWorkType,
+                                partner: recPartner,
+                                bizNo: fbMatch ? fbMatch.bizNo : '',
+                                contractAmt: recContractAmt,
+                                supplyAmt: recSupplyAmt,
+                                vatAmt: recVatAmt,
+                                startDate: '',
+                                endDate: recEndDate || (fbMatch ? fbMatch.endDate : ''),
+                                carryIn: parseCleanNum(sc.endDate),
+                                carryOut: parseCleanNum(sc.carryIn)
+                            });
+                        }
+                        return;
+                    }
+
+                    const validSite = normalSite;
+                    const contractAmt = parseCleanNum(sc.contractAmt);
+                    const supplyAmt = parseCleanNum(sc.supplyAmt);
+                    if (
+                        validSite &&
+                        validSite !== '하도급' &&
+                        validSite !== '원도급' &&
+                        validSite !== '기타/미지정' &&
+                        String(sc.workType || '').trim() !== validSite &&
+                        sc.partner &&
+                        contractAmt > 0 &&
+                        contractAmt >= supplyAmt
+                    ) {
+                        parsedSubsList.push({
+                            id: sc.id || (idx + 1),
+                            type: String(sc.type || '하도급'),
+                            site: validSite,
+                            fullName: String(sc.fullName || ''),
+                            workType: String(sc.workType || '').trim(),
+                            partner: String(sc.partner || '-').trim(),
+                            bizNo: String(sc.bizNo || '').trim(),
+                            contractAmt,
+                            supplyAmt,
+                            vatAmt: parseCleanNum(sc.vatAmt),
+                            startDate: normalizeDateValue(sc.startDate),
+                            endDate: normalizeDateValue(sc.endDate),
+                            carryIn: parseCleanNum(sc.carryIn),
+                            carryOut: parseCleanNum(sc.carryOut)
+                        });
+                    }
+                });
+
+                // 최신 시트의 27개 하도급 계약(매입발행 0원인 계약 포함)이 단 한 건도 누락되지 않도록 병합
+                const mergedSubsMap = new Map();
+                parsedSubsList.forEach(item => {
+                    const key = `${item.site}||${item.partner}||${item.workType}`;
+                    mergedSubsMap.set(key, item);
+                });
+                FALLBACK_SUBCONTRACTS_DATA.forEach(fb => {
+                    const key = `${fb.site}||${fb.partner}||${fb.workType}`;
+                    if (!mergedSubsMap.has(key)) {
+                        mergedSubsMap.set(key, { ...fb });
+                    } else {
+                        const existing = mergedSubsMap.get(key);
+                        if (!existing.bizNo && fb.bizNo) existing.bizNo = fb.bizNo;
+                        if (!existing.endDate && fb.endDate) existing.endDate = fb.endDate;
+                    }
+                });
+                subcontractsData = Array.from(mergedSubsMap.values()).sort((a, b) => (a.id || 999) - (b.id || 999));
 
                 // 3) 거래내역 파싱 (매출, 매입, 계산서, 입출금대장 통합)
                 const incomingRecords = Array.isArray(payload.records) ? payload.records : [];
@@ -1362,6 +1473,22 @@
                         }
                     });
                 }
+
+                // 매입 시트 M열(하도급_공종) 매칭 정보 보정 (구버전 Code.gs 응답 시에도 정확히 28건 하도급_공종 매칭)
+                FALLBACK_SUBWORKTYPE_MATCHES.forEach(m => {
+                    const cleanMBiz = String(m.bizNo || '').replace(/[^0-9]/g, '');
+                    const targetRec = parsedRecords.find(r =>
+                        r.cat === '매입' &&
+                        r.site === m.site &&
+                        r.date === m.date &&
+                        String(r.bizNo || '').replace(/[^0-9]/g, '') === cleanMBiz &&
+                        r.total === m.total &&
+                        !r.subWorkType
+                    );
+                    if (targetRec) {
+                        targetRec.subWorkType = m.subWorkType;
+                    }
+                });
 
                 rawData = parsedRecords;
 
@@ -1999,6 +2126,8 @@
         }
 
         // 하도급 계약업체별 매입발행금액 및 계산서미발행금액 정밀 계산
+        // - 시트(공사목록(하도급))에 기재된 모든 계약건은 매입 세금계산서 발행 내역이 없더라도 빠짐없이 모두 표시합니다.
+        // - 매입 세금계산서('매입' 시트의 '하도급_공종')에 매칭된 내역이 없으면 매입발행금액을 0원으로 인식하여 계산서미발행금액(잔액) = 총계약금으로 산출합니다.
         function computeSubcontractMetrics() {
             let targetSubs = subcontractsData;
             if (currentSite !== 'ALL') {
@@ -2014,14 +2143,9 @@
 
             return targetSubs.map(sub => {
                 const cleanSubBiz = String(sub.bizNo || '').replace(/[^0-9]/g, '');
-                const sameBizSubs = subcontractsData.filter(
-                    x => x.site === sub.site && String(x.bizNo || '').replace(/[^0-9]/g, '') === cleanSubBiz
-                );
-                const sameBizSortedByLen = [...sameBizSubs].sort(
-                    (a, b) => (b.workType || '').length - (a.workType || '').length
-                );
+                const subWorkTypeClean = String(sub.workType || '').replace(/\s+/g, '');
 
-                let issuedAmt = sub.carryOut || 0;
+                let issuedAmt = Number(sub.carryOut) || 0;
                 let issuedSupply = 0;
                 let issuedCount = 0;
 
@@ -2030,49 +2154,24 @@
                     const cleanPBiz = String(p.bizNo || '').replace(/[^0-9]/g, '');
                     if (!cleanSubBiz || cleanPBiz !== cleanSubBiz) return;
 
-                    // 1순위: 매입 시트의 '하도급_공종' 열에 공종이 명시된 경우
-                    if (p.subWorkType) {
-                        if (p.subWorkType.replace(/\s+/g, '') === sub.workType.replace(/\s+/g, '')) {
-                            issuedAmt += (p.total || 0);
-                            issuedSupply += (p.supply || 0);
-                            issuedCount++;
-                        }
-                        return;
-                    }
-
-                    // 2순위: 동일 현장에 같은 사업자번호 하도급 계약이 1건뿐인 경우 전체 합산
-                    if (sameBizSubs.length <= 1) {
-                        issuedAmt += (p.total || 0);
-                        issuedSupply += (p.supply || 0);
-                        issuedCount++;
-                        return;
-                    }
-
-                    // 3순위: 동일 현장에 같은 사업자번호로 공종이 나뉜 경우(예: 아이에스중공업 철골 vs 철골도장) 품목명 키워드로 자동 구분
-                    const itemClean = String(p.item || '').replace(/\s+/g, '');
-                    let matchedSub = null;
-                    for (const cand of sameBizSortedByLen) {
-                        const wtClean = String(cand.workType || '').replace(/\s+/g, '');
-                        if (wtClean && itemClean.includes(wtClean)) {
-                            matchedSub = cand;
-                            break;
-                        }
-                    }
-                    if (!matchedSub) {
-                        matchedSub = sameBizSubs[0];
-                    }
-                    if (matchedSub && matchedSub.id === sub.id) {
-                        issuedAmt += (p.total || 0);
-                        issuedSupply += (p.supply || 0);
+                    // 매입 시트의 '하도급_공종'(subWorkType)이 하도급 계약의 '공종'(workType)과 일치하는 매칭 내역만 합산
+                    const pWorkTypeClean = String(p.subWorkType || '').replace(/\s+/g, '');
+                    if (pWorkTypeClean && subWorkTypeClean && pWorkTypeClean === subWorkTypeClean) {
+                        issuedAmt += (Number(p.total) || 0);
+                        issuedSupply += (Number(p.supply) || 0);
                         issuedCount++;
                     }
                 });
 
-                const unissuedAmt = sub.contractAmt - issuedAmt;
+                // 매칭된 매입 세금계산서 내역이 없으면 issuedAmt는 0원(이월출금액 제외 시 0원)으로 인식되며,
+                // 계산서미발행금액(잔액)은 총계약금 - 0원 = 총계약금 전액으로 계산됩니다.
+                const contractAmt = Number(sub.contractAmt) || 0;
+                const unissuedAmt = contractAmt - issuedAmt;
                 const diffDays = getDiffDaysFromToday(sub.endDate);
 
                 return {
                     ...sub,
+                    contractAmt,
                     issuedAmt,
                     issuedSupply,
                     issuedCount,
@@ -2190,8 +2289,8 @@
                         <div class="text-[11px] text-slate-500 font-bold num-font">공급가: ${formatKRW(sc.supplyAmt)}</div>
                     </td>
                     <td class="num-cell text-right">
-                        <div class="font-black text-blue-900 num-font">${formatKRW(sc.issuedAmt)}</div>
-                        <div class="text-[11px] text-blue-700 font-bold num-font">발행률 ${issueRate}% (${sc.issuedCount}건)</div>
+                        <div class="font-black ${sc.issuedAmt > 0 ? 'text-blue-900' : 'text-slate-500'} num-font">${formatKRW(sc.issuedAmt)}</div>
+                        <div class="text-[11px] ${sc.issuedAmt > 0 ? 'text-blue-700' : 'text-slate-500'} font-bold num-font">${sc.issuedCount > 0 ? `발행률 ${issueRate}% (${sc.issuedCount}건)` : '발행내역 없음 (0원 인식)'}</div>
                     </td>
                     <td class="num-cell text-right">${unissuedHtml}</td>
                 `;
