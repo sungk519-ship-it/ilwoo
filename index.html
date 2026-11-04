@@ -341,8 +341,7 @@
                                     <i class="fa-solid fa-circle text-[8px] text-amber-400"></i>
                                     <span id="syncStatusText">구글시트 동기화 중...</span>
                                 </span>
-                            </div>
-                            <p class="text-[11px] sm:text-sm text-blue-200 mt-0.5 font-medium truncate">현장소장님 전용 원클릭 통합 관리 시스템 (구글 시트 실시간 연동)</p>
+                            </div>                    
                         </div>
                     </div>
 
@@ -2420,15 +2419,15 @@
             if (currentCategory === 'BANK') {
                 thead.innerHTML = `
                     <tr>
-                        <th class="w-[8.5%] text-center">일자</th>
-                        <th class="w-[7.5%] text-center">현장명</th>
-                        <th class="w-[5.5%] text-center">구분</th>
-                        <th class="w-[14.5%]">거래처</th>
-                        <th class="w-[18%]">적요 / 거래내용</th>
-                        <th class="w-[13%] text-right text-emerald-800">입금액</th>
-                        <th class="w-[13%] text-right text-rose-800">출금액</th>
-                        <th class="w-[10.5%] text-right text-slate-600">공급가액</th>
-                        <th class="w-[9.5%] text-center">계산서/비고</th>
+                        <th class="w-[8%] text-center">일자</th>
+                        <th class="w-[7%] text-center">현장명</th>
+                        <th class="w-[5%] text-center">구분</th>
+                        <th class="w-[13%]">거래처</th>
+                        <th class="w-[16%]">적요 / 거래내용</th>
+                        <th class="w-[12%] text-right text-emerald-800">입금액</th>
+                        <th class="w-[12%] text-right text-rose-800">출금액</th>
+                        <th class="w-[10%] text-right text-slate-600">공급가액</th>
+                        <th class="w-[17%] text-center">계산서/비고</th>
                     </tr>
                 `;
             } else {
@@ -2512,11 +2511,11 @@
                         let bankNoteHtml = '<span class="text-xs text-slate-400">-</span>';
                         let mobileBankNoteHtml = '';
                         if (item.note === '1') {
-                            bankNoteHtml = '<span class="inline-block bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-black px-2 py-0.5 rounded">세금계산서</span>';
-                            mobileBankNoteHtml = '<span class="inline-block bg-emerald-100 text-emerald-800 border border-emerald-300 text-[11px] font-black px-2 py-0.5 rounded">세금계산서</span>';
+                            bankNoteHtml = '<span class="inline-block bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-black px-2 py-0.5 rounded whitespace-nowrap">세금계산서</span>';
+                            mobileBankNoteHtml = '<span class="inline-block bg-emerald-100 text-emerald-800 border border-emerald-300 text-[11px] font-black px-2 py-0.5 rounded whitespace-nowrap">세금계산서</span>';
                         } else if (item.note) {
-                            bankNoteHtml = `<span class="inline-block bg-slate-100 text-slate-700 border border-slate-300 text-xs font-bold px-2 py-0.5 rounded whitespace-nowrap">${item.note}</span>`;
-                            mobileBankNoteHtml = `<span class="inline-block bg-slate-100 text-slate-700 border border-slate-300 text-[11px] font-bold px-2 py-0.5 rounded whitespace-nowrap">${item.note}</span>`;
+                            bankNoteHtml = `<span class="inline-block max-w-full bg-slate-100 text-slate-700 border border-slate-300 text-[11px] sm:text-xs font-bold px-1.5 py-0.5 rounded leading-tight break-keep text-left" title="${item.note}">${item.note}</span>`;
+                            mobileBankNoteHtml = `<span class="inline-block max-w-full bg-slate-100 text-slate-700 border border-slate-300 text-[11px] font-bold px-1.5 py-0.5 rounded leading-tight break-keep text-left" title="${item.note}">${item.note}</span>`;
                         }
 
                         // 1) PC 행 렌더링 (절대 변경 없음)
@@ -2531,7 +2530,7 @@
                             <td class="num-cell text-right font-black text-emerald-700 num-font" title="${item.inAmt > 0 ? formatKRW(item.inAmt) : ''}">${item.inAmt > 0 ? formatKRW(item.inAmt) : '-'}</td>
                             <td class="num-cell text-right font-black text-rose-700 num-font" title="${item.outAmt > 0 ? formatKRW(item.outAmt) : ''}">${item.outAmt > 0 ? formatKRW(item.outAmt) : '-'}</td>
                             <td class="num-cell text-right text-slate-600 num-font" title="${item.supply > 0 ? formatKRW(item.supply) : ''}">${item.supply > 0 ? formatKRW(item.supply) : '-'}</td>
-                            <td class="text-center px-1">${bankNoteHtml}</td>
+                            <td class="text-center px-1.5 overflow-hidden leading-snug">${bankNoteHtml}</td>
                         `;
 
                         // 2) 모바일 전용 카드 렌더링
