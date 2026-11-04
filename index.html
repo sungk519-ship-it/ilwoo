@@ -256,21 +256,24 @@
         align-items: center;
         font-family: 'Noto Sans KR', 'Pretendard', -apple-system, sans-serif;
         text-align: center;
-        padding: 20px;
+        padding: 16px;
         box-sizing: border-box;
+        word-break: keep-all;
         transition: opacity 0.22s ease-out;
     ">
         <div style="
             background-color: #ffffff;
             width: 100%;
-            max-width: 380px;
-            border-radius: 20px;
-            padding: 28px 24px;
+            max-width: 420px;
+            border-radius: 22px;
+            padding: 30px 28px;
             box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.35);
             border: 2px solid #cbd5e1;
             display: flex;
             flex-direction: column;
             align-items: center;
+            box-sizing: border-box;
+            word-break: keep-all;
         ">
             <!-- 상단 안전모 배지 & 빙글빙글 도는 스피너 애니메이션 -->
             <div style="position: relative; width: 64px; height: 64px; margin-bottom: 18px; display: flex; align-items: center; justify-content: center;">
@@ -287,23 +290,26 @@
 
             <!-- 큰 제목 안내 문구 -->
             <h2 style="
-                font-size: 19px;
+                font-size: 20px;
                 font-weight: 900;
                 color: #0f172a;
-                margin: 0 0 10px 0;
+                margin: 0 0 12px 0;
                 letter-spacing: -0.02em;
+                word-break: keep-all;
             ">(주)일우건설 현장 장부 동기화 중</h2>
 
-            <!-- 세부 설명 문구 -->
+            <!-- 세부 설명 문구 (어색한 줄바꿈 방지를 위해 문구 단위로 깔끔하게 줄 맞춤) -->
             <p id="loadingOverlaySubText" style="
-                font-size: 14.5px;
+                font-size: 15px;
                 color: #475569;
-                line-height: 1.6;
+                line-height: 1.65;
                 margin: 0;
                 font-weight: 600;
+                word-break: keep-all;
             ">
-                구글 시트에서 <strong style="color: #1d4ed8; font-weight: 800;">최신 자금 내역</strong>을 안전하게 불러오고 있습니다.<br>
-                잠시만 기다려 주세요.
+                구글 시트에서 <strong style="color: #1d4ed8; font-weight: 800;">최신 자금 내역</strong>을<br>
+                안전하게 불러오고 있습니다.<br>
+                <span style="display: inline-block; margin-top: 4px; color: #64748b; font-size: 14px;">잠시만 기다려 주세요.</span>
             </p>
         </div>
     </div>
@@ -854,133 +860,9 @@
         const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbxtCgiul-It0yhiQk3OTbwR18H2ZFiqc0j2cLzvZiE1WZPP_ZABxLbAbuL1MSX9kdNR/exec";
 
         // 2026 일우건설 최신 공사목록 (21개 현장, 이월 입금액/출금액 및 신영아산물탱크 포함)
-        const FALLBACK_SITES_DATA = [
-            { id: 1, type: "원도급", site: "본사", fullName: "(주)일우건설", address: "", manager: "본사", contractAmt: 0, supplyAmt: 0, vatAmt: 0, startDate: "", endDate: "", carryIn: 0, carryOut: 0 },
-            { id: 2, type: "원도급", site: "신영울산", fullName: "(주)신영 울산공장 조립동 증축공사", address: "[44252] 울산 북구 효문동 176 외 2필지", manager: "이상억", contractAmt: 5368000000, supplyAmt: 4880000000, vatAmt: 488000000, startDate: "2026-10-08", endDate: "2027-01-31", carryIn: 0, carryOut: 0 },
-            { id: 3, type: "원도급", site: "신영울산설계", fullName: "㈜신영 울산공장 조립동 증축공사 설계용역", address: "", manager: "본사", contractAmt: 86900000, supplyAmt: 79000000, vatAmt: 7900000, startDate: "2026-07-07", endDate: "2026-08-31", carryIn: 0, carryOut: 0 },
-            { id: 4, type: "원도급", site: "신영아산설계", fullName: "㈜신영 아산공장 설계용역", address: "", manager: "본사", contractAmt: 64900000, supplyAmt: 59000000, vatAmt: 5900000, startDate: "2026-05-05", endDate: "2026-05-10", carryIn: 0, carryOut: 0 },
-            { id: 5, type: "원도급", site: "신영울산토목", fullName: "㈜신영 울산공장 조립라인 구축에 따른 토목공사", address: "울산광역시 북구 효문동 176", manager: "김성호", contractAmt: 720500000, supplyAmt: 655000000, vatAmt: 65500000, startDate: "2026-01-05", endDate: "2026-02-28", carryIn: 0, carryOut: 0 },
-            { id: 6, type: "원도급", site: "제니스", fullName: "(주)제니스오토텍 사무동 증축공사", address: "[38899] 경북 영천시 금호읍 구암리 1332-2", manager: "박준현", contractAmt: 858000000, supplyAmt: 780000000, vatAmt: 78000000, startDate: "2026-09-07", endDate: "2026-12-20", carryIn: 0, carryOut: 0 },
-            { id: 7, type: "원도급", site: "신호", fullName: "(주)신호 리모델링 공사", address: "경상북도 경산시 자인면 자인공단로 88", manager: "본사", contractAmt: 58300000, supplyAmt: 53000000, vatAmt: 5300000, startDate: "2026-05-05", endDate: "2026-05-10", carryIn: 0, carryOut: 0 },
-            { id: 8, type: "원도급", site: "신영울산조립", fullName: "(주)신영 울산공장 조립동 기둥 보강공사", address: "[44252] 울산 북구 책골길 36", manager: "이상억", contractAmt: 506000000, supplyAmt: 460000000, vatAmt: 46000000, startDate: "2026-08-01", endDate: "2026-08-31", carryIn: 0, carryOut: 0 },
-            { id: 9, type: "원도급", site: "내서능암", fullName: "내서 능암, 신촌처리구역 하수관로 정비사업", address: "경북 상주시 내서면 능암리, 신촌리 일원", manager: "정기봉", contractAmt: 5053815340, supplyAmt: 4594377582, vatAmt: 459437758, startDate: "2026-08-12", endDate: "2029-12-08", carryIn: 0, carryOut: 0 },
-            { id: 10, type: "원도급", site: "태강스틸", fullName: "(주)태강스틸 연결통로 증축공사", address: "[38899] 경북 영천시 금호읍 구암리 1332-5", manager: "박준현", contractAmt: 105600000, supplyAmt: 96000000, vatAmt: 9600000, startDate: "2026-07-14", endDate: "2026-08-28", carryIn: 0, carryOut: 0 },
-            { id: 11, type: "원도급", site: "신영엠맥", fullName: "(주)신영 울산엠맥공장 리모델링공사", address: "[44247] 울산 북구 무룡로 60-16", manager: "이상억", contractAmt: 58300000, supplyAmt: 53000000, vatAmt: 5300000, startDate: "2026-05-15", endDate: "2026-06-30", carryIn: 0, carryOut: 0 },
-            { id: 12, type: "원도급", site: "평화", fullName: "평화발레오 세천공장 채광창 철거 및 지붕판넬 설치공사", address: "대구 달성군 다사읍 세천리 1663-11", manager: "본사", contractAmt: 127600000, supplyAmt: 116000000, vatAmt: 11600000, startDate: "2026-04-02", endDate: "2026-04-30", carryIn: 0, carryOut: 0 },
-            { id: 13, type: "원도급", site: "한현", fullName: "㈜한현스틸 공장 증축공사", address: "경북 경산시 하양읍 대학리 1017", manager: "박준현", contractAmt: 1392600000, supplyAmt: 1266000000, vatAmt: 126600000, startDate: "2026-03-01", endDate: "2026-06-30", carryIn: 0, carryOut: 2200000 },
-            { id: 14, type: "원도급", site: "신영아산", fullName: "㈜신영 아산공장 증축공사", address: "충남 아산시 신창면 서부남로 505외 3필지", manager: "김성호", contractAmt: 9746000000, supplyAmt: 8860000000, vatAmt: 886000000, startDate: "2026-02-05", endDate: "2026-10-31", carryIn: 0, carryOut: 2750000 },
-            { id: 15, type: "원도급", site: "질골", fullName: "질골지구 소규모 농촌용수개발사업 토목공사", address: "경북 영주시 이산면 지동리, 석포리 일원", manager: "권태운", contractAmt: 4335112120, supplyAmt: 3941011018, vatAmt: 394101102, startDate: "2025-12-23", endDate: "2027-12-30", carryIn: 23000000, carryOut: 16656980 },
-            { id: 16, type: "원도급", site: "태영", fullName: "태영테크㈜ 공장 신축공사", address: "경상북도 경주시 내남면 명계3일반산업단지 8B 2L", manager: "이상억", contractAmt: 7260000000, supplyAmt: 6600000000, vatAmt: 660000000, startDate: "2025-12-23", endDate: "2026-06-30", carryIn: 13750000, carryOut: 10318190 },
-            { id: 17, type: "원도급", site: "산동", fullName: "산동유치원 신축공사", address: "경북 구미시 산동읍 동곡리 1170", manager: "임재영", contractAmt: 5052771000, supplyAmt: 4593428182, vatAmt: 459342818, startDate: "2025-12-15", endDate: "2026-12-19", carryIn: 0, carryOut: 0 },
-            { id: 18, type: "원도급", site: "일신", fullName: "일신하이폴리㈜ 고령 제2공장 증축공사", address: "경상북도 고령군 대가야읍 내곡리 1151번지", manager: "김성호", contractAmt: 2387000000, supplyAmt: 2170000000, vatAmt: 217000000, startDate: "2025-12-10", endDate: "2026-05-31", carryIn: 238700000, carryOut: 2928900 },
-            { id: 19, type: "원도급", site: "덕산", fullName: "덕산지구 배수개선사업 토목기계건축공사", address: "경북 칠곡군 약목면 덕산리", manager: "이원세", contractAmt: 6595786000, supplyAmt: 5996169091, vatAmt: 599616909, startDate: "2024-03-08", endDate: "2027-12-20", carryIn: 3362400000, carryOut: 2547217504 },
-            { id: 20, type: "원도급", site: "대덕", fullName: "㈜대덕아이엠티 완주공장 신축공사", address: "전북특별자치도 완주군 봉동읍 장구리 640외3필지", manager: "이상학", contractAmt: 21725000000, supplyAmt: 19750000000, vatAmt: 1975000000, startDate: "2025-08-15", endDate: "2026-06-30", carryIn: 12842500000, carryOut: 7550301393 },
-            { id: 21, type: "원도급", site: "신영아산물탱크", fullName: "(주)신영 아산공장 물탱크 옥상이설 구조보강공사 및 기타공사", address: "충청남도 아산시 신창면 궁화리 184-2외3필지", manager: "김성호", contractAmt: 70400000, supplyAmt: 64000000, vatAmt: 6400000, startDate: "2026-10-21", endDate: "2026-11-30", carryIn: 0, carryOut: 0 }
-        ];
-
-        // 2026 일우건설 공사목록(하도급) 27개 계약 기본 데이터 (최신 엑셀 시트 완벽 반영: 신영아산 11건, 신영울산 5건, 내서능암 2건, 산동 4건, 제니스 5건)
-        const FALLBACK_SUBCONTRACTS_DATA = [
-            // 1. 신영아산 (11건)
-            { id: 1, type: "하도급", site: "신영아산", fullName: "", workType: "철골", partner: "아이에스중공업(철골)", bizNo: "515-81-47146", contractAmt: 711700000, supplyAmt: 647000000, vatAmt: 64700000, startDate: "", endDate: "2026-10-31", carryIn: 0, carryOut: 0 },
-            { id: 2, type: "하도급", site: "신영아산", fullName: "", workType: "철골도장", partner: "아이에스중공업(도장)", bizNo: "515-81-47146", contractAmt: 112750000, supplyAmt: 102500000, vatAmt: 10250000, startDate: "", endDate: "2026-10-31", carryIn: 0, carryOut: 0 },
-            { id: 3, type: "하도급", site: "신영아산", fullName: "", workType: "철골자재납품", partner: "아이에스산업", bizNo: "515-81-52843", contractAmt: 1437700000, supplyAmt: 1307000000, vatAmt: 130700000, startDate: "", endDate: "2026-10-31", carryIn: 0, carryOut: 0 },
-            { id: 4, type: "하도급", site: "신영아산", fullName: "", workType: "전기", partner: "신화전공", bizNo: "504-81-84137", contractAmt: 785125000, supplyAmt: 713750000, vatAmt: 71375000, startDate: "", endDate: "2026-10-31", carryIn: 0, carryOut: 0 },
-            { id: 5, type: "하도급", site: "신영아산", fullName: "", workType: "파일", partner: "바른기초건설", bizNo: "514-81-77609", contractAmt: 342100000, supplyAmt: 311000000, vatAmt: 31100000, startDate: "", endDate: "2026-05-31", carryIn: 0, carryOut: 0 },
-            { id: 6, type: "하도급", site: "신영아산", fullName: "", workType: "바닥", partner: "에이씨아이건설", bizNo: "215-87-59730", contractAmt: 187550000, supplyAmt: 170500000, vatAmt: 17050000, startDate: "", endDate: "2026-07-31", carryIn: 0, carryOut: 0 },
-            { id: 7, type: "하도급", site: "신영아산", fullName: "", workType: "기계설비", partner: "성한이엔지", bizNo: "504-81-77335", contractAmt: 166650000, supplyAmt: 151500000, vatAmt: 15150000, startDate: "", endDate: "2026-10-31", carryIn: 0, carryOut: 0 },
-            { id: 8, type: "하도급", site: "신영아산", fullName: "", workType: "가시설", partner: "㈜태평건설", bizNo: "409-86-42220", contractAmt: 48400000, supplyAmt: 44000000, vatAmt: 4400000, startDate: "", endDate: "2026-10-31", carryIn: 0, carryOut: 0 },
-            { id: 9, type: "하도급", site: "신영아산", fullName: "", workType: "도장공사", partner: "창유건설", bizNo: "515-81-52315", contractAmt: 53900000, supplyAmt: 49000000, vatAmt: 4900000, startDate: "", endDate: "2026-10-31", carryIn: 0, carryOut: 0 },
-            { id: 10, type: "하도급", site: "신영아산", fullName: "", workType: "오수처리시설", partner: "대한엔지니어링㈜", bizNo: "312-81-73064", contractAmt: 83600000, supplyAmt: 76000000, vatAmt: 7600000, startDate: "", endDate: "2026-10-31", carryIn: 0, carryOut: 0 },
-            { id: 11, type: "하도급", site: "신영아산", fullName: "", workType: "금속창호", partner: "동해건설", bizNo: "337-81-00463", contractAmt: 97625000, supplyAmt: 88750000, vatAmt: 8875000, startDate: "", endDate: "2026-10-31", carryIn: 0, carryOut: 0 },
-            // 2. 신영울산 (5건 - 매입 세금계산서 발행 매칭 전, 매입발행 0원 / 미발행 = 총계약금)
-            { id: 12, type: "하도급", site: "신영울산", fullName: "", workType: "철골공사", partner: "㈜아이에스중공업", bizNo: "515-81-47146", contractAmt: 871750000, supplyAmt: 792500000, vatAmt: 79250000, startDate: "", endDate: "2026-12-20", carryIn: 0, carryOut: 0 },
-            { id: 13, type: "하도급", site: "신영울산", fullName: "", workType: "철골자재납품", partner: "아이에스스틸", bizNo: "245-87-02432", contractAmt: 990000000, supplyAmt: 900000000, vatAmt: 90000000, startDate: "", endDate: "2026-12-31", carryIn: 0, carryOut: 0 },
-            { id: 14, type: "하도급", site: "신영울산", fullName: "", workType: "철거공사", partner: "우진공영", bizNo: "514-81-71056", contractAmt: 107800000, supplyAmt: 98000000, vatAmt: 9800000, startDate: "", endDate: "2026-11-30", carryIn: 0, carryOut: 0 },
-            { id: 15, type: "하도급", site: "신영울산", fullName: "", workType: "기계설비", partner: "성한이엔지", bizNo: "504-81-77335", contractAmt: 83050000, supplyAmt: 75500000, vatAmt: 7550000, startDate: "", endDate: "2027-01-31", carryIn: 0, carryOut: 0 },
-            { id: 16, type: "하도급", site: "신영울산", fullName: "", workType: "전기공사", partner: "신화전공", bizNo: "504-81-84137", contractAmt: 210100000, supplyAmt: 191000000, vatAmt: 19100000, startDate: "", endDate: "2027-01-31", carryIn: 0, carryOut: 0 },
-            // 3. 내서능암 (2건)
-            { id: 17, type: "하도급", site: "내서능암", fullName: "", workType: "토공사", partner: "동진개발", bizNo: "831-87-00308", contractAmt: 401000000, supplyAmt: 364545455, vatAmt: 36454545, startDate: "", endDate: "2028-04-07", carryIn: 0, carryOut: 0 },
-            { id: 18, type: "하도급", site: "내서능암", fullName: "", workType: "상하수도설비", partner: "동진개발", bizNo: "831-87-00308", contractAmt: 1000000000, supplyAmt: 909090909, vatAmt: 90909091, startDate: "", endDate: "2028-04-07", carryIn: 0, carryOut: 0 },
-            // 4. 산동 (4건 - 동보석건 석공사는 매입발행 매칭 내역 없음 -> 0원 인식)
-            { id: 19, type: "하도급", site: "산동", fullName: "", workType: "철콘", partner: "건영개발", bizNo: "513-81-88670", contractAmt: 862840000, supplyAmt: 784400000, vatAmt: 78440000, startDate: "", endDate: "2026-12-19", carryIn: 0, carryOut: 0 },
-            { id: 20, type: "하도급", site: "산동", fullName: "", workType: "금속창호", partner: "상산건설", bizNo: "504-81-32416", contractAmt: 242000000, supplyAmt: 220000000, vatAmt: 22000000, startDate: "", endDate: "2026-12-19", carryIn: 0, carryOut: 0 },
-            { id: 21, type: "하도급", site: "산동", fullName: "", workType: "수장공사", partner: "우암테크", bizNo: "484-88-00977", contractAmt: 102300000, supplyAmt: 93000000, vatAmt: 9300000, startDate: "", endDate: "2026-12-19", carryIn: 0, carryOut: 0 },
-            { id: 22, type: "하도급", site: "산동", fullName: "", workType: "석공사", partner: "동보석건", bizNo: "513-81-37093", contractAmt: 23650000, supplyAmt: 21500000, vatAmt: 2150000, startDate: "", endDate: "2026-12-19", carryIn: 0, carryOut: 0 },
-            // 5. 제니스 (5건 - 매입 세금계산서 발행 매칭 전, 매입발행 0원 / 미발행 = 총계약금)
-            { id: 23, type: "하도급", site: "제니스", fullName: "", workType: "철골", partner: "㈜아이에스중공업", bizNo: "515-81-47146", contractAmt: 85800000, supplyAmt: 78000000, vatAmt: 7800000, startDate: "", endDate: "2026-10-30", carryIn: 0, carryOut: 0 },
-            { id: 24, type: "하도급", site: "제니스", fullName: "", workType: "철거공사", partner: "㈜우진공영", bizNo: "514-81-71056", contractAmt: 18150000, supplyAmt: 16500000, vatAmt: 1650000, startDate: "", endDate: "2026-11-10", carryIn: 0, carryOut: 0 },
-            { id: 25, type: "하도급", site: "제니스", fullName: "", workType: "전기공사", partner: "신화전공", bizNo: "504-81-84137", contractAmt: 33275000, supplyAmt: 30250000, vatAmt: 3025000, startDate: "", endDate: "2026-11-30", carryIn: 0, carryOut: 0 },
-            { id: 26, type: "하도급", site: "제니스", fullName: "", workType: "기계설비", partner: "성한이엔지", bizNo: "504-81-77335", contractAmt: 18700000, supplyAmt: 17000000, vatAmt: 1700000, startDate: "", endDate: "2026-11-30", carryIn: 0, carryOut: 0 },
-            { id: 27, type: "하도급", site: "제니스", fullName: "", workType: "복합판넬공사", partner: "대진산업건설", bizNo: "514-81-79761", contractAmt: 55275000, supplyAmt: 50250000, vatAmt: 5025000, startDate: "", endDate: "2026-11-30", carryIn: 0, carryOut: 0 }
-        ];
-
-        // 매입 시트 M열(하도급_공종)에 기재된 28건 기본 매칭 정보 (구버전 Code.gs 사용 시에도 100% 정확히 매칭되도록 보정)
-        const FALLBACK_SUBWORKTYPE_MATCHES = [
-            { site: "신영아산", date: "2026-03-20", bizNo: "504-81-84137", total: 88000000, subWorkType: "전기" },
-            { site: "산동", date: "2026-04-20", bizNo: "513-81-88670", total: 217179000, subWorkType: "철콘" },
-            { site: "신영아산", date: "2026-04-30", bizNo: "514-81-77609", total: 342100000, subWorkType: "파일" },
-            { site: "신영아산", date: "2026-06-25", bizNo: "515-81-47146", total: 330000000, subWorkType: "철골" },
-            { site: "신영아산", date: "2026-06-25", bizNo: "515-81-52843", total: 330000000, subWorkType: "철골자재납품" },
-            { site: "신영아산", date: "2026-06-30", bizNo: "504-81-84137", total: 275000000, subWorkType: "전기" },
-            { site: "신영아산", date: "2026-06-30", bizNo: "515-81-52843", total: 880000000, subWorkType: "철골자재납품" },
-            { site: "신영아산", date: "2026-06-30", bizNo: "515-81-47146", total: 220000000, subWorkType: "철골" },
-            { site: "신영아산", date: "2026-07-31", bizNo: "215-87-59730", total: 158400000, subWorkType: "바닥" },
-            { site: "신영아산", date: "2026-08-31", bizNo: "409-86-42220", total: 48400000, subWorkType: "가시설" },
-            { site: "신영아산", date: "2026-08-31", bizNo: "215-87-59730", total: 29150000, subWorkType: "바닥" },
-            { site: "신영아산", date: "2026-09-01", bizNo: "504-81-77335", total: 77000000, subWorkType: "기계설비" },
-            { site: "신영아산", date: "2026-09-15", bizNo: "504-81-84137", total: 110000000, subWorkType: "전기" },
-            { site: "신영아산", date: "2026-09-18", bizNo: "312-81-73064", total: 50160000, subWorkType: "오수처리시설" },
-            { site: "산동", date: "2026-09-30", bizNo: "513-81-88670", total: 188050950, subWorkType: "철콘" },
-            { site: "신영아산", date: "2026-09-30", bizNo: "515-81-47146", total: 112750000, subWorkType: "철골도장" },
-            { site: "신영아산", date: "2026-09-30", bizNo: "515-81-47146", total: 161700000, subWorkType: "철골" },
-            { site: "신영아산", date: "2026-09-30", bizNo: "515-81-47146", total: -253550000, subWorkType: "철골" },
-            { site: "신영아산", date: "2026-09-30", bizNo: "515-81-47146", total: 253550000, subWorkType: "철골" },
-            { site: "신영아산", date: "2026-09-30", bizNo: "515-81-52843", total: 227700000, subWorkType: "철골자재납품" },
-            { site: "신영아산", date: "2026-09-30", bizNo: "515-81-52315", total: 53900000, subWorkType: "도장공사" },
-            { site: "산동", date: "2026-10-12", bizNo: "504-81-32416", total: 104700000, subWorkType: "금속창호" },
-            { site: "산동", date: "2026-10-12", bizNo: "484-88-00977", total: 39250000, subWorkType: "수장공사" },
-            { site: "신영아산", date: "2026-10-16", bizNo: "337-81-00463", total: 55000000, subWorkType: "금속창호" },
-            { site: "신영아산", date: "2026-10-16", bizNo: "504-81-84137", total: 312125000, subWorkType: "전기" },
-            { site: "신영아산", date: "2026-10-20", bizNo: "312-81-73064", total: 33440000, subWorkType: "오수처리시설" },
-            { site: "내서능암", date: "2026-10-22", bizNo: "831-87-00308", total: 136586000, subWorkType: "토공사" },
-            { site: "내서능암", date: "2026-10-22", bizNo: "831-87-00308", total: 437031000, subWorkType: "상하수도설비" }
-        ];
-
-        // 2026 일우건설 계산서(면세) 28건 기본 데이터
-        const FALLBACK_BILLS_DATA = [
-            { date: "2026-01-15", month: 1, site: "본사", origSite: "본사", cat: "매입", bizNo: "621-82-04003", partner: "(재)영남건설기술교육원", ceo: "오성유", item: "전현철_설계시공 최초 전문B교육(직무분야 교육)", supply: 200000, vat: 0, total: 200000, inAmt: 0, outAmt: 0, note: "2026-01-15", paper: "계산서" },
-            { date: "2026-01-28", month: 1, site: "본사", origSite: "본사", cat: "매입", bizNo: "616-82-00266", partner: "제주시수산업협동조합", ceo: "김경필", item: "수산물", supply: 6656680, vat: 0, total: 6656680, inAmt: 0, outAmt: 0, note: "2026-01-28", paper: "계산서" },
-            { date: "2026-01-31", month: 1, site: "본사", origSite: "본사", cat: "매입", bizNo: "345-17-01822", partner: "솔샘정원", ceo: "류자영", item: "화훼", supply: 100000, vat: 0, total: 100000, inAmt: 0, outAmt: 0, note: "2026-02-11", paper: "계산서" },
-            { date: "2026-01-30", month: 1, site: "대덕", origSite: "대덕", cat: "매입", bizNo: "107-88-37747", partner: "(주)안전뉴스그룹", ceo: "임경복", item: "안전교육교재집", supply: 200000, vat: 0, total: 200000, inAmt: 0, outAmt: 0, note: "2026-02-20", paper: "계산서" },
-            { date: "2026-02-04", month: 2, site: "대덕", origSite: "대덕", cat: "매입", bizNo: "408-82-21471", partner: "사단법인 대한안전문화협회", ceo: "이문희", item: "안전보건관리책임자 신규교육_건설업 (6H)_임경중", supply: 58000, vat: 0, total: 58000, inAmt: 0, outAmt: 0, note: "2026-02-04", paper: "계산서" },
-            { date: "2026-02-12", month: 2, site: "본사", origSite: "본사", cat: "매입", bizNo: "621-82-04003", partner: "(재)영남건설기술교육원", ceo: "오성유", item: "전현철_품질관리 최초 전문교육", supply: 280000, vat: 0, total: 280000, inAmt: 0, outAmt: 0, note: "2026-02-11", paper: "계산서" },
-            { date: "2026-02-26", month: 2, site: "본사", origSite: "본사", cat: "매입", bizNo: "616-82-00266", partner: "제주시수산업협동조합", ceo: "김경필", item: "수산물", supply: 323600, vat: 0, total: 323600, inAmt: 0, outAmt: 0, note: "2026-01-29", paper: "계산서" },
-            { date: "2026-02-25", month: 2, site: "본사", origSite: "본사", cat: "매입", bizNo: "621-82-04003", partner: "(재)영남건설기술교육원", ceo: "오성유", item: "품질관리 전문교육(특급) 황윤기", supply: 280000, vat: 0, total: 280000, inAmt: 0, outAmt: 0, note: "2026-02-23", paper: "계산서" },
-            { date: "2026-03-03", month: 3, site: "대덕", origSite: "대덕", cat: "매입", bizNo: "504-82-05935", partner: "(사)대한산업안전협회 대구지역본부", ceo: "권형규", item: "2026-03-03~2026-03-05 | 이동명 | 2026년 안전관리자 보수교육(건설업)", supply: 184000, vat: 0, total: 184000, inAmt: 0, outAmt: 0, note: "2026-03-03", paper: "계산서" },
-            { date: "2026-04-20", month: 4, site: "질골", origSite: "질골", cat: "매입", bizNo: "504-82-05935", partner: "(사)대한산업안전협회 대구지역본부", ceo: "권형규", item: "2026-04-20~2026-04-24 | 김현식 | 2026년 안전관리자 신규교육(건설업)", supply: 253000, vat: 0, total: 253000, inAmt: 0, outAmt: 0, note: "2026-03-20", paper: "계산서" },
-            { date: "2026-04-30", month: 4, site: "산동", origSite: "산동", cat: "매입", bizNo: "107-88-37747", partner: "(주)안전뉴스그룹", ceo: "임경복", item: "안전교육교재집", supply: 390000, vat: 0, total: 390000, inAmt: 0, outAmt: 0, note: "2026-05-19", paper: "계산서" },
-            { date: "2026-04-30", month: 4, site: "본사", origSite: "본사", cat: "매입", bizNo: "345-17-01822", partner: "솔샘정원", ceo: "류자영", item: "화훼", supply: 600000, vat: 0, total: 600000, inAmt: 0, outAmt: 0, note: "2026-05-07", paper: "계산서" },
-            { date: "2026-04-17", month: 4, site: "산동", origSite: "산동", cat: "매입", bizNo: "506-94-307308", partner: "동아일보사㈜", ceo: "박영근", item: "신문구독료", supply: 300000, vat: 0, total: 300000, inAmt: 0, outAmt: 0, note: "2026-05-19", paper: "종이·계산서" },
-            { date: "2026-05-31", month: 5, site: "본사", origSite: "본사", cat: "매입", bizNo: "345-17-01822", partner: "솔샘정원", ceo: "류자영", item: "화훼", supply: 100000, vat: 0, total: 100000, inAmt: 0, outAmt: 0, note: "2026-06-10", paper: "계산서" },
-            { date: "2026-06-30", month: 6, site: "본사", origSite: "본사", cat: "매입", bizNo: "345-17-01822", partner: "솔샘정원", ceo: "류자영", item: "화훼", supply: 100000, vat: 0, total: 100000, inAmt: 0, outAmt: 0, note: "2026-07-10", paper: "계산서" },
-            { date: "2026-06-01", month: 6, site: "대덕", origSite: "대덕", cat: "매입", bizNo: "714-88-01746", partner: "주식회사 푸른정화사", ceo: "염재복", item: "정화조청소", supply: 270000, vat: 0, total: 270000, inAmt: 0, outAmt: 0, note: "2026-07-20", paper: "종이·계산서" },
-            { date: "2026-08-31", month: 8, site: "산동", origSite: "산동", cat: "매입", bizNo: "125-86-16858", partner: "주식회사 안전환경일보", ceo: "김길수", item: "환경교육자료지침서", supply: 340000, vat: 0, total: 340000, inAmt: 0, outAmt: 0, note: "2026-09-21", paper: "계산서" },
-            { date: "2026-08-31", month: 8, site: "산동", origSite: "산동", cat: "매입", bizNo: "125-86-16858", partner: "주식회사 안전환경일보", ceo: "김길수", item: "산업재해안전예방", supply: -340000, vat: 0, total: -340000, inAmt: 0, outAmt: 0, note: "수정", paper: "계산서" },
-            { date: "2026-08-31", month: 8, site: "산동", origSite: "산동", cat: "매입", bizNo: "125-86-16858", partner: "주식회사 안전환경일보", ceo: "김길수", item: "산업재해안전예방", supply: 340000, vat: 0, total: 340000, inAmt: 0, outAmt: 0, note: "수정", paper: "계산서" },
-            { date: "2026-08-18", month: 8, site: "질골", origSite: "질골", cat: "매입", bizNo: "726-88-00508", partner: "(주)이에이치에스연구소", ceo: "권태이", item: "작업환경측정", supply: 730000, vat: 0, total: 730000, inAmt: 0, outAmt: 0, note: "2026-09-21", paper: "계산서" },
-            { date: "2026-09-01", month: 9, site: "산동", origSite: "산동", cat: "매입", bizNo: "125-86-16858", partner: "주식회사 안전환경일보", ceo: "김길수", item: "산업재해안전예방", supply: -340000, vat: 0, total: -340000, inAmt: 0, outAmt: 0, note: "수정", paper: "계산서" },
-            { date: "2026-09-01", month: 9, site: "산동", origSite: "산동", cat: "매입", bizNo: "125-86-16858", partner: "주식회사 안전환경일보", ceo: "김길수", item: "산업재해안전예방", supply: 340000, vat: 0, total: 340000, inAmt: 0, outAmt: 0, note: "수정", paper: "계산서" },
-            { date: "2026-09-14", month: 9, site: "본사", origSite: "본사", cat: "매입", bizNo: "621-82-04003", partner: "(재)영남건설기술교육원", ceo: "오성유", item: "스마트건설전문[스마트공간정보활용]교육(건설정책역량강화)_임경중부장", supply: 200000, vat: 0, total: 200000, inAmt: 0, outAmt: 0, note: "2026-10-20", paper: "계산서" },
-            { date: "2026-09-14", month: 9, site: "질골", origSite: "질골", cat: "매입", bizNo: "508-82-00155", partner: "（재）안동성소병원유지재단", ceo: "이원형", item: "특수검진비", supply: 467990, vat: 0, total: 467990, inAmt: 0, outAmt: 0, note: "2026-09-15", paper: "계산서" },
-            { date: "2026-09-23", month: 9, site: "본사", origSite: "본사", cat: "매입", bizNo: "512-90-32215", partner: "봉화송이", ceo: "허진", item: "송이버섯", supply: 4400000, vat: 0, total: 4400000, inAmt: 0, outAmt: 0, note: "2026-09-23", paper: "계산서" },
-            { date: "2026-09-30", month: 9, site: "본사", origSite: "본사", cat: "매입", bizNo: "345-17-01822", partner: "솔샘정원", ceo: "류자영", item: "화훼", supply: 400000, vat: 0, total: 400000, inAmt: 0, outAmt: 0, note: "2026-10-08", paper: "계산서" },
-            { date: "2026-09-29", month: 9, site: "산동", origSite: "산동", cat: "매입", bizNo: "552-91-01279", partner: "보건위생환경", ceo: "최영재", item: "2026-10-20", supply: 180000, vat: 0, total: 180000, inAmt: 0, outAmt: 0, note: "2026-10-20", paper: "종이·계산서" },
-            { date: "2026-10-19", month: 10, site: "내서능암", origSite: "내서능암", cat: "매입", bizNo: "504-82-05935", partner: "(사)대한산업안전협회", ceo: "김동엽", item: "2026-10-19~2026-10-23 | 임재형 | 2026년 안전관리자 신규교육(건설업)", supply: 253000, vat: 0, total: 253000, inAmt: 0, outAmt: 0, note: "", paper: "계산서" }
-        ];
-
-        // 시트 실시간 연동 데이터 저장소
-        let sitesData = [...FALLBACK_SITES_DATA];
-        let subcontractsData = [...FALLBACK_SUBCONTRACTS_DATA];
+        // 실시간 연동 데이터 저장소 (내장 기본값 없이 100% 구글 시트 실시간 데이터만 사용)
+        let sitesData = [];
+        let subcontractsData = [];
         let rawData = [];
 
         // 앱 상태 변수
@@ -1097,15 +979,30 @@
         }
 
         // 현장명 정규화 헬퍼 (제니스오토텍 -> 제니스, 한현스틸 -> 한현, 빈값 -> 기타/미지정)
-        function normalizeSiteKey(siteStr) {
+        // 구 완료현장(공사목록에 없는 2025년 이전 종료 현장) 기본 분류 세트
+        // 단, 공사목록 시트에 직접 추가된 현장명은 무엇이든 100% 독립 현장으로 자동 인식됩니다.
+        const COMPLETED_LEGACY_SITES = new Set(['증산', '호암천', '울릉', '완료현장']);
+
+        function normalizeSiteKey(siteStr, registeredSiteSet = null) {
             if (!siteStr) return '기타/미지정';
             const s = String(siteStr).trim().replace(/\s+/g, '');
             if (!s || s === '-' || s === '0' || s === '미지정' || s === '기타/미지정') return '기타/미지정';
             if (s === '제니스오토텍') return '제니스';
             if (s === '한현스틸') return '한현';
             if (s === '기타(경상비)' || s === '기타' || s === '경상비' || s === '본사관리') return '본사';
-            if (s === '증산' || s === '호암천' || s === '울릉' || s === '완료현장') return '기타/미지정';
+            if (COMPLETED_LEGACY_SITES.has(s) && (!registeredSiteSet || !registeredSiteSet.has(s))) {
+                return '기타/미지정';
+            }
             return s;
+        }
+
+        function normalizePartnerKey(nameStr) {
+            if (!nameStr) return '';
+            return String(nameStr)
+                .replace(/\(주\)|㈜|주식회사|유한회사|（주）|\(유\)|（유）/g, '')
+                .replace(/\([^)]*\)/g, '')
+                .replace(/[^가-힣a-zA-Z0-9]/g, '')
+                .trim();
         }
 
         // 날짜 문자열 정규화 (엑셀 시리얼 숫자, '10월 19일', ISO 문자열 등을 YYYY-MM-DD로 통일, 날짜가 아닌 숫자/사업자번호는 빈문자열 반환)
@@ -1234,119 +1131,169 @@
                     throw new Error(payload.message || '시트 응답 오류');
                 }
 
-                // 1) 공사목록 파싱 (B열 PIN코드 추가로 인한 열 밀림 자동 감지 및 21개 현장 최신 이월 입출금액 보정)
+                // 1) 공사목록 파싱 (100% 구글 시트 실시간 데이터 반영, 새로운 현장 추가 시 즉시 자동 생성)
                 const incomingSites = Array.isArray(payload.sites) ? payload.sites : [];
-                const fallbackSiteMap = {};
-                FALLBACK_SITES_DATA.forEach(fs => { fallbackSiteMap[fs.site] = fs; });
+                const registeredSiteSet = new Set();
+                const parsedSites = [];
 
-                // 만약 앱스크립트(Code.gs) 열 인덱스 불일치로 manager에 숫자(부가세 등)가 들어오거나 site에 '원도급'이 들어온 경우 자동 감지하여 복원
-                const isShiftedByPinCol = incomingSites.some(s =>
-                    s.site === '원도급' ||
-                    s.site === '하도급' ||
-                    /^\d{3,4}$/.test(String(s.type || '').trim()) ||
-                    /^\d{4,}$/.test(String(s.manager || '').replace(/,/g, '').trim())
-                );
+                incomingSites.forEach((s, idx) => {
+                    // site 필드가 구버전 스크립트로 인해 '기타/미지정'으로 변환된 경우 origSite 등 원본 현장명 우선 확인
+                    const rawSiteName = (s.origSite && String(s.origSite).trim())
+                        ? String(s.origSite).trim()
+                        : String(s.site || '').trim();
+                    if (!rawSiteName || rawSiteName === '기타/미지정') return;
 
-                if (incomingSites.length === 0 || isShiftedByPinCol) {
-                    sitesData = FALLBACK_SITES_DATA.map(s => ({ ...s }));
-                } else {
-                    const parsedSitesMap = {};
-                    incomingSites.forEach((s, idx) => {
-                        const siteKey = normalizeSiteKey(s.site);
-                        if (!siteKey || siteKey === '기타/미지정') return;
-                        const fb = fallbackSiteMap[siteKey] || {};
-                        let contractAmt = parseCleanNum(s.contractAmt || s.totalContractAmt);
-                        let supplyAmt = parseCleanNum(s.supplyAmt);
-                        let vatAmt = parseCleanNum(s.vatAmt);
-                        let carryIn = s.carryIn !== undefined && s.carryIn !== '' ? parseCleanNum(s.carryIn) : undefined;
-                        let carryOut = s.carryOut !== undefined && s.carryOut !== '' ? parseCleanNum(s.carryOut) : undefined;
+                    const siteKey = rawSiteName.replace(/\s+/g, '');
+                    registeredSiteSet.add(siteKey);
 
-                        if (supplyAmt === 0 && vatAmt > 0) supplyAmt = vatAmt * 10;
-                        if (contractAmt === 0 && (supplyAmt > 0 || vatAmt > 0)) contractAmt = supplyAmt + vatAmt;
+                    let contractAmt = parseCleanNum(s.contractAmt || s.totalContractAmt);
+                    let supplyAmt = parseCleanNum(s.supplyAmt);
+                    let vatAmt = parseCleanNum(s.vatAmt);
+                    const carryIn = parseCleanNum(s.carryIn);
+                    const carryOut = parseCleanNum(s.carryOut);
 
-                        // 시트에 새로 입력된 계약금액/이월입출금액이 구버전 앱스크립트에서 누락된 경우 최신 시트 값으로 자동 보정
-                        if ((contractAmt === 0 || contractAmt < supplyAmt) && fb.contractAmt > 0) {
-                            contractAmt = fb.contractAmt;
-                            supplyAmt = fb.supplyAmt;
-                            vatAmt = fb.vatAmt;
+                    if (supplyAmt === 0 && vatAmt > 0) supplyAmt = vatAmt * 10;
+                    if (contractAmt === 0 && (supplyAmt > 0 || vatAmt > 0)) contractAmt = supplyAmt + vatAmt;
+
+                    const rawManager = String(s.manager || '').trim();
+                    const validManager = (rawManager && !/^\d+$/.test(rawManager.replace(/,/g, '')))
+                        ? rawManager
+                        : '-';
+
+                    parsedSites.push({
+                        id: Number(s.id) || (idx + 1),
+                        type: String(s.type || '원도급').trim(),
+                        site: siteKey,
+                        fullName: String(s.fullName || s.projectName || siteKey).trim(),
+                        address: String(s.address || '').trim(),
+                        manager: validManager,
+                        contractAmt,
+                        supplyAmt,
+                        vatAmt,
+                        carryIn,
+                        carryOut,
+                        startDate: normalizeDateValue(s.startDate),
+                        endDate: normalizeDateValue(s.endDate)
+                    });
+                });
+
+                sitesData = parsedSites;
+
+                // 2) 거래내역 파싱 (매출, 매입, 계산서, 입출금대장 통합 - 100% 구글 시트 실시간 데이터)
+                const incomingRecords = Array.isArray(payload.records) ? payload.records : [];
+                const parsedRecords = incomingRecords.map((r, idx) => {
+                    if (Array.isArray(r)) {
+                        // r[4](origSite: 시트에 적힌 원본 현장명)가 있으면 우선 사용하여 신규 현장명이 '기타/미지정'으로 빠지지 않도록 보장
+                        const rawSiteStr = (r[4] && String(r[4]).trim()) ? String(r[4]).trim() : String(r[3] || '').trim();
+                        const siteKey = normalizeSiteKey(rawSiteStr, registeredSiteSet);
+                        const inAmt = parseCleanNum(r[13]);
+                        const outAmt = parseCleanNum(r[14]);
+                        let cat = String(r[5] || '매입').trim();
+
+                        // Code.gs에서 '통장입출금' 또는 '입출금'으로 보내온 입출금대장 데이터를 '입금' / '출금'으로 자동 변환
+                        if (cat === '통장입출금' || cat === '입출금' || (cat !== '매출' && cat !== '매입' && (inAmt > 0 || outAmt > 0))) {
+                            cat = (inAmt > 0 && outAmt === 0) ? '입금' : '출금';
                         }
-                        if (siteKey === '대덕' && contractAmt === 12000000000) {
-                            contractAmt = 21725000000;
-                            supplyAmt = 19750000000;
-                            vatAmt = 1975000000;
-                        }
-                        if (!carryIn && fb.carryIn > 0) carryIn = fb.carryIn;
-                        if (!carryOut && fb.carryOut > 0) carryOut = fb.carryOut;
-                        if (siteKey === '대덕' && carryIn === 3117500000) {
-                            carryIn = 12842500000;
-                            carryOut = 7550301393;
-                        }
 
-                        const rawManager = String(s.manager || '').trim();
-                        const validManager = (rawManager && !/^\d+$/.test(rawManager.replace(/,/g, '')))
-                            ? rawManager
-                            : (fb.manager || '-');
-
-                        parsedSitesMap[siteKey] = {
-                            id: s.id || fb.id || (idx + 1),
-                            type: String(s.type || fb.type || '원도급'),
+                        return {
+                            id: r[0] || (idx + 1),
+                            date: normalizeDateValue(r[1]),
+                            month: Number(r[2]) || 1,
                             site: siteKey,
-                            fullName: String(s.fullName || s.projectName || fb.fullName || s.site || ''),
-                            address: String(s.address || fb.address || ''),
-                            manager: validManager,
-                            contractAmt,
-                            supplyAmt,
-                            vatAmt,
-                            carryIn: carryIn || 0,
-                            carryOut: carryOut || 0,
-                            startDate: normalizeDateValue(s.startDate) || fb.startDate || '',
-                            endDate: normalizeDateValue(s.endDate) || fb.endDate || ''
+                            origSite: String(r[4] || r[3] || '').trim(),
+                            cat,
+                            bizNo: String(r[6] || '').trim(),
+                            partner: String(r[7] || '-').trim(),
+                            ceo: String(r[8] || '').trim(),
+                            item: String(r[9] || '-').trim(),
+                            supply: parseCleanNum(r[10]),
+                            vat: parseCleanNum(r[11]),
+                            total: parseCleanNum(r[12]),
+                            inAmt,
+                            outAmt,
+                            note: normalizeNoteValue(r[15]),
+                            paper: String(r[16] || '').trim(),
+                            subWorkType: String(r[17] || '').trim()
                         };
-                    });
+                    }
 
-                    // FALLBACK_SITES_DATA에 있는 신규 현장(예: 신영아산물탱크 등)이 누락되지 않도록 병합
-                    FALLBACK_SITES_DATA.forEach(fb => {
-                        if (!parsedSitesMap[fb.site]) {
-                            parsedSitesMap[fb.site] = { ...fb };
-                        }
-                    });
-                    sitesData = Object.values(parsedSitesMap).sort((a, b) => (a.id || 999) - (b.id || 999));
-                }
+                    const rawSiteStr = (r.origSite && String(r.origSite).trim()) ? String(r.origSite).trim() : String(r.site || '').trim();
+                    const siteKey = normalizeSiteKey(rawSiteStr, registeredSiteSet);
+                    const inAmt = parseCleanNum(r.inAmt);
+                    const outAmt = parseCleanNum(r.outAmt);
+                    let cat = String(r.cat || '매입').trim();
+                    if (cat === '통장입출금' || cat === '입출금' || (cat !== '매출' && cat !== '매입' && (inAmt > 0 || outAmt > 0))) {
+                        cat = (inAmt > 0 && outAmt === 0) ? '입금' : '출금';
+                    }
 
-                // 2) 공사목록(하도급) 파싱 ('도급 종류' 열 삭제에 따른 열 이동 자동 복원 및 27개 하도급 계약 전체 보장)
+                    return {
+                        id: r.id || (idx + 1),
+                        date: normalizeDateValue(r.date),
+                        month: Number(r.month) || 1,
+                        site: siteKey,
+                        origSite: String(r.origSite || r.site || '').trim(),
+                        cat,
+                        bizNo: String(r.bizNo || '').trim(),
+                        partner: String(r.partner || '-').trim(),
+                        ceo: String(r.ceo || '').trim(),
+                        item: String(r.item || '-').trim(),
+                        supply: parseCleanNum(r.supply),
+                        vat: parseCleanNum(r.vat),
+                        total: parseCleanNum(r.total),
+                        inAmt,
+                        outAmt,
+                        note: normalizeNoteValue(r.note),
+                        paper: String(r.paper || '').trim(),
+                        subWorkType: String(r.subWorkType || '').trim()
+                    };
+                });
+
+                rawData = parsedRecords;
+
+                // 3) 공사목록(하도급) 파싱 (100% 구글 시트 데이터 기반)
                 const rawIncomingSubs = Array.isArray(payload.subcontracts) ? payload.subcontracts : [];
                 const parsedSubsList = [];
 
                 rawIncomingSubs.forEach((sc, idx) => {
-                    // 구버전 Code.gs가 새 시트(B열=현장요약어, C열=사업자번호, D열=업체명, E열=공사명, F열=공종, G열=계약금액...)를 읽었을 때 자동 복원
-                    const shiftedSite = normalizeSiteKey(sc.type);
-                    const normalSite = normalizeSiteKey(sc.site);
+                    const shiftedSite = normalizeSiteKey(sc.type, registeredSiteSet);
+                    const rawNormalSite = (sc.origSite && String(sc.origSite).trim()) ? String(sc.origSite).trim() : String(sc.site || '').trim();
+                    const normalSite = normalizeSiteKey(rawNormalSite, registeredSiteSet);
 
-                    if ((normalSite === '기타/미지정' || /^\d{3}-\d{2}-\d{5}$/.test(String(sc.site || '').trim())) && shiftedSite && shiftedSite !== '기타/미지정' && shiftedSite !== '하도급' && shiftedSite !== '원도급') {
+                    // 만약 구버전 Code.gs가 '도급 종류' 열이 삭제된 시트를 읽어 한 칸 밀린 경우 동적으로 열 위치 복원
+                    if ((normalSite === '기타/미지정' || /^\d{3}-\d{2}-\d{5}$/.test(rawNormalSite)) && shiftedSite && shiftedSite !== '기타/미지정' && shiftedSite !== '하도급' && shiftedSite !== '원도급') {
                         const recPartner = String(sc.fullName || '').trim();
                         const recWorkType = String(sc.partner || '').trim();
                         const recContractAmt = parseCleanNum(sc.bizNo);
                         const recSupplyAmt = parseCleanNum(sc.contractAmt);
                         const recVatAmt = parseCleanNum(sc.supplyAmt);
                         const recEndDate = normalizeDateValue(sc.startDate);
-                        // FALLBACK_SUBCONTRACTS_DATA에서 동일 현장+업체+공종 사업자번호 매칭
-                        const fbMatch = FALLBACK_SUBCONTRACTS_DATA.find(f =>
-                            f.site === shiftedSite && (f.workType === recWorkType || f.partner === recPartner)
+
+                        // 매입 내역에서 동일 현장 + 업체명(또는 공종)으로 사업자번호 동적 탐색
+                        const pNorm = normalizePartnerKey(recPartner);
+                        const matchedBuy = rawData.find(r =>
+                            r.cat === '매입' &&
+                            r.site === shiftedSite &&
+                            r.bizNo &&
+                            (
+                                (r.subWorkType && r.subWorkType.replace(/\s+/g, '') === recWorkType.replace(/\s+/g, '')) ||
+                                (pNorm && normalizePartnerKey(r.partner) === pNorm)
+                            )
                         );
+
                         if (recPartner && recContractAmt > 0) {
                             parsedSubsList.push({
-                                id: sc.id || (idx + 1),
+                                id: Number(sc.id) || (idx + 1),
                                 type: '하도급',
                                 site: shiftedSite,
-                                fullName: String(sc.workType || ''),
+                                fullName: String(sc.workType || '').trim(),
                                 workType: recWorkType,
                                 partner: recPartner,
-                                bizNo: fbMatch ? fbMatch.bizNo : '',
+                                bizNo: matchedBuy ? matchedBuy.bizNo : '',
                                 contractAmt: recContractAmt,
                                 supplyAmt: recSupplyAmt,
                                 vatAmt: recVatAmt,
                                 startDate: '',
-                                endDate: recEndDate || (fbMatch ? fbMatch.endDate : ''),
+                                endDate: recEndDate,
                                 carryIn: parseCleanNum(sc.endDate),
                                 carryOut: parseCleanNum(sc.carryIn)
                             });
@@ -1354,24 +1301,21 @@
                         return;
                     }
 
-                    const validSite = normalSite;
                     const contractAmt = parseCleanNum(sc.contractAmt);
                     const supplyAmt = parseCleanNum(sc.supplyAmt);
                     if (
-                        validSite &&
-                        validSite !== '하도급' &&
-                        validSite !== '원도급' &&
-                        validSite !== '기타/미지정' &&
-                        String(sc.workType || '').trim() !== validSite &&
+                        normalSite &&
+                        normalSite !== '하도급' &&
+                        normalSite !== '원도급' &&
+                        normalSite !== '기타/미지정' &&
                         sc.partner &&
-                        contractAmt > 0 &&
-                        contractAmt >= supplyAmt
+                        contractAmt > 0
                     ) {
                         parsedSubsList.push({
-                            id: sc.id || (idx + 1),
-                            type: String(sc.type || '하도급'),
-                            site: validSite,
-                            fullName: String(sc.fullName || ''),
+                            id: Number(sc.id) || (idx + 1),
+                            type: String(sc.type || '하도급').trim(),
+                            site: normalSite,
+                            fullName: String(sc.fullName || '').trim(),
                             workType: String(sc.workType || '').trim(),
                             partner: String(sc.partner || '-').trim(),
                             bizNo: String(sc.bizNo || '').trim(),
@@ -1386,111 +1330,40 @@
                     }
                 });
 
-                // 최신 시트의 27개 하도급 계약(매입발행 0원인 계약 포함)이 단 한 건도 누락되지 않도록 병합
-                const mergedSubsMap = new Map();
-                parsedSubsList.forEach(item => {
-                    const key = `${item.site}||${item.partner}||${item.workType}`;
-                    mergedSubsMap.set(key, item);
-                });
-                FALLBACK_SUBCONTRACTS_DATA.forEach(fb => {
-                    const key = `${fb.site}||${fb.partner}||${fb.workType}`;
-                    if (!mergedSubsMap.has(key)) {
-                        mergedSubsMap.set(key, { ...fb });
-                    } else {
-                        const existing = mergedSubsMap.get(key);
-                        if (!existing.bizNo && fb.bizNo) existing.bizNo = fb.bizNo;
-                        if (!existing.endDate && fb.endDate) existing.endDate = fb.endDate;
+                subcontractsData = parsedSubsList;
+
+                // 만약 매출/매입/입출금대장/하도급에 등장한 신규 현장명이 아직 공사목록 배열에 없다면 자동으로 현장 목록에 추가
+                const existingSiteKeys = new Set(sitesData.map(s => s.site));
+                const extraSites = new Set();
+                rawData.forEach(r => {
+                    if (r.site && r.site !== '기타/미지정' && !existingSiteKeys.has(r.site)) {
+                        if (r.site === '본사' && !isAdminUnlocked) return;
+                        extraSites.add(r.site);
                     }
                 });
-                subcontractsData = Array.from(mergedSubsMap.values()).sort((a, b) => (a.id || 999) - (b.id || 999));
-
-                // 3) 거래내역 파싱 (매출, 매입, 계산서, 입출금대장 통합)
-                const incomingRecords = Array.isArray(payload.records) ? payload.records : [];
-                let parsedRecords = incomingRecords.map((r, idx) => {
-                    if (Array.isArray(r)) {
-                        return {
-                            id: r[0] || (idx + 1),
-                            date: normalizeDateValue(r[1]),
-                            month: Number(r[2]) || 1,
-                            site: normalizeSiteKey(r[3]),
-                            origSite: String(r[4] || ''),
-                            cat: String(r[5] || '매입'),
-                            bizNo: String(r[6] || ''),
-                            partner: String(r[7] || '-'),
-                            ceo: String(r[8] || ''),
-                            item: String(r[9] || '-'),
-                            supply: parseCleanNum(r[10]),
-                            vat: parseCleanNum(r[11]),
-                            total: parseCleanNum(r[12]),
-                            inAmt: parseCleanNum(r[13]),
-                            outAmt: parseCleanNum(r[14]),
-                            note: normalizeNoteValue(r[15]),
-                            paper: String(r[16] || ''),
-                            subWorkType: String(r[17] || '').trim()
-                        };
+                subcontractsData.forEach(sc => {
+                    if (sc.site && sc.site !== '기타/미지정' && !existingSiteKeys.has(sc.site)) {
+                        if (sc.site === '본사' && !isAdminUnlocked) return;
+                        extraSites.add(sc.site);
                     }
-                    return {
-                        id: r.id || (idx + 1),
-                        date: normalizeDateValue(r.date),
-                        month: Number(r.month) || 1,
-                        site: normalizeSiteKey(r.site),
-                        origSite: String(r.origSite || r.site || ''),
-                        cat: String(r.cat || '매입'),
-                        bizNo: String(r.bizNo || ''),
-                        partner: String(r.partner || '-'),
-                        ceo: String(r.ceo || ''),
-                        item: String(r.item || '-'),
-                        supply: parseCleanNum(r.supply),
-                        vat: parseCleanNum(r.vat),
-                        total: parseCleanNum(r.total),
-                        inAmt: parseCleanNum(r.inAmt),
-                        outAmt: parseCleanNum(r.outAmt),
-                        note: normalizeNoteValue(r.note),
-                        paper: String(r.paper || ''),
-                        subWorkType: String(r.subWorkType || '').trim()
-                    };
                 });
-
-                // 만약 구글 시트 앱스크립트(Code.gs)가 아직 '계산서' 탭 전체(28건)를 보내기 전이라면 누락 없이 자동 보정
-                const billCountInPayload = parsedRecords.filter(r => r.paper && r.paper.includes('계산서')).length;
-                if (billCountInPayload < 10) {
-                    FALLBACK_BILLS_DATA.forEach((fb, idx) => {
-                        if (fb.site === '본사' && !isAdminUnlocked) return;
-                        const existingIdx = parsedRecords.findIndex(r =>
-                            r.cat === '매입' && r.date === fb.date && r.bizNo === fb.bizNo && r.supply === fb.supply
-                        );
-                        if (existingIdx !== -1) {
-                            parsedRecords[existingIdx].vat = 0;
-                            parsedRecords[existingIdx].total = fb.total;
-                            parsedRecords[existingIdx].paper = fb.paper || '계산서';
-                            if (fb.note) parsedRecords[existingIdx].note = fb.note;
-                        } else {
-                            parsedRecords.push({
-                                id: 900000 + idx,
-                                ...fb,
-                                subWorkType: ''
-                            });
-                        }
+                extraSites.forEach(siteKey => {
+                    sitesData.push({
+                        id: sitesData.length + 1,
+                        type: '원도급',
+                        site: siteKey,
+                        fullName: siteKey,
+                        address: '',
+                        manager: '-',
+                        contractAmt: 0,
+                        supplyAmt: 0,
+                        vatAmt: 0,
+                        carryIn: 0,
+                        carryOut: 0,
+                        startDate: '',
+                        endDate: ''
                     });
-                }
-
-                // 매입 시트 M열(하도급_공종) 매칭 정보 보정 (구버전 Code.gs 응답 시에도 정확히 28건 하도급_공종 매칭)
-                FALLBACK_SUBWORKTYPE_MATCHES.forEach(m => {
-                    const cleanMBiz = String(m.bizNo || '').replace(/[^0-9]/g, '');
-                    const targetRec = parsedRecords.find(r =>
-                        r.cat === '매입' &&
-                        r.site === m.site &&
-                        r.date === m.date &&
-                        String(r.bizNo || '').replace(/[^0-9]/g, '') === cleanMBiz &&
-                        r.total === m.total &&
-                        !r.subWorkType
-                    );
-                    if (targetRec) {
-                        targetRec.subWorkType = m.subWorkType;
-                    }
                 });
-
-                rawData = parsedRecords;
 
                 populateManagerDropdown();
                 renderUpcomingCompletionSites();
@@ -1660,9 +1533,10 @@
             }
 
             sitesData.forEach(s => {
-                if ((countsMap[s.site] || 0) > 0 || s.contractAmt > 0 || s.site === '본사') {
-                    allSiteKeys.add(s.site);
-                }
+                if (s.site) allSiteKeys.add(s.site);
+            });
+            subcontractsData.forEach(sc => {
+                if (sc.site) allSiteKeys.add(sc.site);
             });
             rawData.forEach(r => {
                 if (r.site) allSiteKeys.add(r.site);
@@ -2143,6 +2017,7 @@
 
             return targetSubs.map(sub => {
                 const cleanSubBiz = String(sub.bizNo || '').replace(/[^0-9]/g, '');
+                const subPartnerNorm = normalizePartnerKey(sub.partner);
                 const subWorkTypeClean = String(sub.workType || '').replace(/\s+/g, '');
 
                 let issuedAmt = Number(sub.carryOut) || 0;
@@ -2152,7 +2027,10 @@
                 purchaseRecords.forEach(p => {
                     if (p.site !== sub.site) return;
                     const cleanPBiz = String(p.bizNo || '').replace(/[^0-9]/g, '');
-                    if (!cleanSubBiz || cleanPBiz !== cleanSubBiz) return;
+                    const isSameContractor = (cleanSubBiz && cleanPBiz)
+                        ? (cleanPBiz === cleanSubBiz)
+                        : (subPartnerNorm && normalizePartnerKey(p.partner) === subPartnerNorm);
+                    if (!isSameContractor) return;
 
                     // 매입 시트의 '하도급_공종'(subWorkType)이 하도급 계약의 '공종'(workType)과 일치하는 매칭 내역만 합산
                     const pWorkTypeClean = String(p.subWorkType || '').replace(/\s+/g, '');
@@ -2163,7 +2041,7 @@
                     }
                 });
 
-                // 매칭된 매입 세금계산서 내역이 없으면 issuedAmt는 0원(이월출금액 제외 시 0원)으로 인식되며,
+                // 매칭된 매입 세금계산서 내역이 없으면 issuedAmt는 0원으로 인식되며,
                 // 계산서미발행금액(잔액)은 총계약금 - 0원 = 총계약금 전액으로 계산됩니다.
                 const contractAmt = Number(sub.contractAmt) || 0;
                 const unissuedAmt = contractAmt - issuedAmt;
